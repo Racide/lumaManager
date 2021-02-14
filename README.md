@@ -1,5 +1,9 @@
 # lumaManager
 
+<p align="center">
+  <img src="assets/logo.png">
+</p>
+
 Yet another lumaManager.
 
 Download the latest release [here](https://github.com/Racide/lumaManager/releases).
