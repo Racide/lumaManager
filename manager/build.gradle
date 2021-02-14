@@ -1,0 +1,38 @@
+plugins{
+    id "java"
+    id "application"
+    id "com.github.johnrengelman.shadow" version "6.1.0"
+}
+
+repositories{
+    mavenCentral()
+}
+
+dependencies{
+    implementation("net.sourceforge.htmlunit:htmlunit:2.46.0")
+    implementation("com.squareup.okhttp3:okhttp:4.9.0")
+    implementation("com.squareup.okio:okio:2.10.0")
+    implementation("com.squareup.moshi:moshi:1.11.0")
+    implementation("org.tinylog:tinylog-impl:2.2.1")
+    compileOnly("org.tinylog:tinylog-api:2.2.1")
+}
+
+application{
+    setMainClassName("manager.Main")
+}
+
+version "v1.0.0"
+
+tasks.withType(AbstractArchiveTask){
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
+shadowJar{
+    archiveBaseName.set(rootProject.getName())
+    archiveClassifier.set("")
+    minimize{
+        exclude(dependency("org.tinylog:tinylog-impl:.*"))
+        exclude(dependency("net.sourceforge.htmlunit:htmlunit:.*")) // needs investigation
+    }
+}
