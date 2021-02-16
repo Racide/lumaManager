@@ -7,7 +7,7 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import java.awt.Color;
 
-import static manager.model.Globals.defaultFont;
+import static manager.view.components.ViewGlobals.defaultFont;
 
 public class LAFSettings{
     public static void set(){

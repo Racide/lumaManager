@@ -2,25 +2,30 @@ package manager.control;
 
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.squareup.moshi.JsonAdapter;
 import manager.model.Crawler;
 import manager.model.Data;
+import manager.model.Globals;
 import manager.model.Profiles;
 import manager.model.SearchResults;
 import manager.model.SteamApp;
 import manager.model.Updater;
 import manager.view.Gui;
+import manager.view.Settings;
 import okio.BufferedSink;
 import okio.Okio;
 import org.tinylog.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
-public final class Controller implements Gui.Listener{
+import static manager.model.Globals.moshi;
+
+public final class Controller implements Gui.Listener, Settings.Listener{
     private final Gui.Controller gui = Gui.create(this);
     private Data data;
 
@@ -58,14 +63,14 @@ public final class Controller implements Gui.Listener{
             data.serialize();
         }catch(IOException ex){
             Logger.error(ex, "serialization failed");
-            gui.serializationError();
+            gui.writeError(Globals.dataFile);
         }
     }
 
     private void initializeData(){
         try{
             data = Data.loadData();
-        }catch(IOException ex){
+        }catch(NullPointerException | IOException ex){
             Logger.info(ex, "serialized data not found or unreadable");
             Optional<File> file = gui.folderChooser(null);
             if(file.isPresent()){
@@ -88,13 +93,13 @@ public final class Controller implements Gui.Listener{
     // ↓ EDT ONLY ↓
 
     @Override
-    public void addGames(Profiles.Profile profile, Stream<SteamApp> steamAppStream){
-        steamAppStream.forEach(profile::addSteamApp);
+    public void addGames(Profiles.Profile profile, SearchResults searchResults, int[] indices){
+        Arrays.stream(indices).mapToObj(searchResults::getSteamApp).forEach(profile::addSteamApp);
     }
 
     @Override
-    public void delGames(Profiles.Profile profile, IntStream steamAppIndexStream){
-        steamAppIndexStream.forEachOrdered(profile::removeSteamApp);
+    public void delGames(Profiles.Profile profile, int[] indices){
+        Arrays.stream(indices).forEachOrdered(profile::removeSteamApp);
     }
 
     @Override
@@ -107,10 +112,59 @@ public final class Controller implements Gui.Listener{
         data.profiles.removeProfile(index);
     }
 
+    public void settings(){
+        Settings.Controller settings = gui.createSettings(this);
+        settings.populate(data.getOutputDir());
+        settings.initialize();
+    }
+
     @Override
-    public void setOutputFile(){
+    public void setOutputFile(Settings.Controller settings){
         Optional<File> file = gui.folderChooser(data.getOutputDir());
-        file.ifPresent(value -> data.setOutputDir(value));
+        file.ifPresent((value) -> {
+            data.setOutputDir(value);
+            settings.populate(data.getOutputDir());
+        });
+    }
+
+    @Override
+    public void importGLRMProfile(Settings.Controller settings){
+        gui.fileChooser(null, new String[]{".json"}).ifPresent((file) -> {
+            final JsonAdapter<Profiles.Profile.GLRMProfileJson> jsonAdapter = moshi.adapter(Profiles.Profile.GLRMProfileJson.class)
+                                                                                   .nonNull();
+            try{
+                Profiles.Profile.GLRMProfileJson glrmProfileJson = Objects.requireNonNull(jsonAdapter.fromJson(Okio.buffer(
+                        Okio.source(file))));
+                data.profiles.addProfile(new Profiles.Profile(glrmProfileJson));
+            }catch(NullPointerException | IOException ex){
+                Logger.error(ex, "failed to import GLRM profile");
+                gui.readError(file);
+            }
+        });
+    }
+
+    @Override
+    public void createShortcut(Settings.Controller settings){
+        // final File workingDir = new File(".");
+        // if(!Globals.copyResource(Controller.class.getResourceAsStream("/logo.ico"), workingDir)){
+        //     return;
+        // }
+        // gui.fileSave(new File(System.getProperty("user.home"), "Luma Manager")).ifPresent((shortcut) -> {
+        //     try{
+        //         final File jar = new File(Controller.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+        //         System.out.println(jar.getAbsolutePath()); // todo
+        //         final ShellLink sl = ShellLink.createLink(jar.getAbsolutePath())
+        //                                       .setWorkingDir(workingDir.getAbsolutePath())
+        //                                       .setIconLocation(new File(workingDir, "logo.ico").getAbsolutePath());
+        //         sl.saveTo(shortcut.getAbsolutePath());
+        //     }catch(URISyntaxException ex){
+        //         Logger.error(ex, "failed to get current jar path");
+        //         throw new RuntimeException(ex);
+        //     }catch(IOException ex){
+        //         Logger.error(ex, "failed to write shortcut file to {}", shortcut.getAbsolutePath());
+        //         gui.generationError(shortcut.getAbsolutePath());
+        //     }
+        // });
     }
 
     public void generate(Profiles.Profile profile){
@@ -138,7 +192,7 @@ public final class Controller implements Gui.Listener{
             }
             int i = 0;
             for(SteamApp steamApp : profile.getSteamApps()){
-                try(BufferedSink sink = Okio.buffer(Okio.sink(new File(outputPath + File.separator + i + ".txt")))){
+                try(BufferedSink sink = Okio.buffer(Okio.sink(new File(outputPath, +i + ".txt")))){
                     sink.writeUtf8(steamApp.id + "");
                     i++;
                 }

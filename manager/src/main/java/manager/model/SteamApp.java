@@ -11,6 +11,12 @@ public class SteamApp{
         this.type = type;
     }
 
+    public SteamApp(AbstractSteamApp abstractSteamApp){
+        id = abstractSteamApp.getId();
+        title = abstractSteamApp.getTitle();
+        type = abstractSteamApp.getType();
+    }
+
     public String toString(){
         return title;
     }
@@ -51,6 +57,39 @@ public class SteamApp{
                 }
             }
             throw new EnumConstantNotPresentException(Type.class, s);
+        }
+    }
+
+    private interface AbstractSteamApp{
+        long getId();
+
+        String getTitle();
+
+        Type getType();
+    }
+
+    public static class GLRMSteamAppJson implements AbstractSteamApp{
+        private long id;
+        private String name;
+        private String type;
+
+        @Override
+        public long getId(){
+            return id;
+        }
+
+        @Override
+        public String getTitle(){
+            return name;
+        }
+
+        @Override
+        public Type getType(){
+            if(Type.contains(type)){
+                return Type.fromString(type);
+            }else{
+                return Type.GAME;
+            }
         }
     }
 }

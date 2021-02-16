@@ -37,6 +37,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
+import javax.swing.filechooser.FileFilter;
 import javax.swing.table.TableColumnModel;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -55,10 +56,8 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.RunnableFuture;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
-import static manager.model.Globals.defaultFont;
+import static manager.view.components.ViewGlobals.*;
 
 public class Gui{
     private final JFrame frame;
@@ -91,9 +90,6 @@ public class Gui{
     }
 
     private Gui(){
-        final Font mediumFont = defaultFont.deriveFont(Font.PLAIN, 20);
-        final Font bigFont = defaultFont.deriveFont(Font.PLAIN, 30);
-
         frame = new JFrame();
         frame.setIconImages(Arrays.asList(new ImageIcon(Gui.class.getResource("/images/logo16.png")).getImage(),
                 new ImageIcon(Gui.class.getResource("/images/logo32.png")).getImage(),
@@ -308,8 +304,6 @@ public class Gui{
             setSearchResults(new SearchResults());
             SwingUtilities.invokeLater(() -> {
                 lbVersion.setText(Globals.version);
-                frame.pack();
-                frame.setLocationRelativeTo(null);
 
                 frame.addWindowListener(this);
                 btQuery.addActionListener(this);
@@ -322,6 +316,8 @@ public class Gui{
                 btSettings.addActionListener(this);
                 btGenerate.addActionListener(this);
 
+                frame.pack();
+                frame.setLocationRelativeTo(null);
                 frame.setVisible(true);
                 frame.requestFocusInWindow();
             });
@@ -369,6 +365,44 @@ public class Gui{
             return Optional.of(fc.getSelectedFile());
         }
 
+        public Optional<File> fileChooser(@Nullable File outputDir, @Nullable String[] extensions){
+            final JFileChooser fc = new JFileChooser();
+            fc.setDialogTitle("Select a file");
+            if(extensions != null){
+                fc.setFileFilter(new FileFilter(){
+                    @Override
+                    public boolean accept(File f){
+                        if(f.isDirectory()){
+                            return true;
+                        }
+                        return Arrays.stream(extensions)
+                                     .anyMatch((extension) -> extension != null && f.getName().endsWith(extension));
+                    }
+
+                    @Override
+                    public String getDescription(){
+                        return "Json files";
+                    }
+                });
+            }
+            fc.setCurrentDirectory(outputDir);
+            if(fc.showOpenDialog(frame) != JFileChooser.APPROVE_OPTION){
+                return Optional.empty();
+            }
+            return Optional.of(fc.getSelectedFile());
+        }
+
+        public Optional<File> fileSave(@Nullable File outputDir){
+            final JFileChooser fc = new JFileChooser();
+            fc.setDialogTitle("Select the output file");
+            fc.setDialogType(JFileChooser.SAVE_DIALOG);
+            fc.setCurrentDirectory(outputDir);
+            if(fc.showOpenDialog(frame) != JFileChooser.APPROVE_OPTION){
+                return Optional.empty();
+            }
+            return Optional.of(fc.getSelectedFile());
+        }
+
         public void setSearchResults(SearchResults steamApps){
             SwingUtilities.invokeLater(() -> {
                 tbResults.setModel(steamApps);
@@ -403,17 +437,24 @@ public class Gui{
                     JOptionPane.ERROR_MESSAGE);
         }
 
-        public void serializationError(){
+        public void readError(File file){
             JOptionPane.showMessageDialog(frame,
-                    "Settings couldn't be written to\n" + Globals.dataFile.getAbsolutePath() + "\nCheck you have the required permissions.",
-                    "Failed to save settings",
+                    "Data couldn't be read from\n" + file.getAbsolutePath() + "\nCheck you have the required permissions.",
+                    "Failed to read data",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+
+        public void writeError(File file){
+            JOptionPane.showMessageDialog(frame,
+                    "Data couldn't be written to\n" + file.getAbsolutePath() + "\nCheck you have the required permissions.",
+                    "Failed to write data",
                     JOptionPane.ERROR_MESSAGE);
         }
 
         public void generationError(String outputPath){
             JOptionPane.showMessageDialog(frame,
                     "Output couldn't be written correctly to\n" + outputPath + "\nCheck you have the required permissions.",
-                    "Failed to generate files",
+                    "Failed to write files",
                     JOptionPane.ERROR_MESSAGE);
         }
 
@@ -432,6 +473,10 @@ public class Gui{
         }
 
         // ↓ EDT ONLY ↓
+
+        public Settings.Controller createSettings(Settings.Listener listener){
+            return Settings.create(frame, listener);
+        }
 
         @Override
         public void intervalAdded(ListDataEvent e){
@@ -467,19 +512,19 @@ public class Gui{
                 setProfile((Profiles.Profile) cbProfiles.getSelectedItem());
             }else if(s == btAddGames){
                 listener.addGames((Profiles.Profile) cbProfiles.getSelectedItem(),
+                        (SearchResults) tbResults.getModel(),
                         Arrays.stream(tbResults.getSelectedRows())
                               .map(tbResults.getRowSorter()::convertRowIndexToModel)
-                              .mapToObj(((SearchResults) tbResults.getModel())::getSteamApp));
+                              .toArray());
             }else if(s == btDelGames){
-                int[] selectedIndices = lsGames.getSelectedIndices();
                 listener.delGames((Profiles.Profile) cbProfiles.getSelectedItem(),
-                        Arrays.stream(selectedIndices).map(i -> ~i).sorted().map(i -> ~i));
+                        Arrays.stream(lsGames.getSelectedIndices()).map(i -> ~i).sorted().map(i -> ~i).toArray());
             }else if(s == btAddProfile){
                 newProfile().ifPresent(listener::addProfile);
             }else if(s == btDelProfile){
                 listener.delProfile(cbProfiles.getSelectedIndex());
             }else if(s == btSettings){
-                listener.setOutputFile();
+                listener.settings();
             }else if(s == btGenerate){
                 loading(true);
                 listener.generate((Profiles.Profile) cbProfiles.getSelectedItem()); // IO short enough for EDT
@@ -515,25 +560,25 @@ public class Gui{
         }
 
         private void setProfile(Profiles.Profile profile){
-            SwingUtilities.invokeLater(() -> lsGames.setModel(profile));
+            lsGames.setModel(profile);
         }
     }
 
     public interface Listener{
         void search(String query);
 
-        void addGames(Profiles.Profile profile, Stream<SteamApp> steamAppStream);
+        void addGames(Profiles.Profile profile, SearchResults searchResults, int[] indices);
 
-        void delGames(Profiles.Profile profile, IntStream steamAppIndexStream);
+        void delGames(Profiles.Profile profile, int[] indices);
 
         void addProfile(String name);
 
         void delProfile(int index);
 
-        void setOutputFile();
-
         void generate(Profiles.Profile profile);
 
         void serialize();
+
+        void settings();
     }
 }

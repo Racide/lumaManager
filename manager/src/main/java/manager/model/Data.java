@@ -12,13 +12,13 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import static manager.model.Globals.moshi;
 
 public class Data{
-    private static final ReadWriteLock lock = new ReentrantReadWriteLock();
+    private static final ReadWriteLock lock = new ReentrantReadWriteLock(true);
     private static final JsonAdapter<Data> jsonAdapter = moshi.adapter(Data.class).nonNull();
     private String ignoreVersion;
     public File outputDir;
     public final Profiles profiles;
 
-    public static Data loadData() throws IOException{
+    public static Data loadData() throws NullPointerException, IOException{
         return jsonAdapter.fromJson(Okio.buffer(Okio.source(Globals.dataFile)));
     }
 
@@ -56,12 +56,11 @@ public class Data{
     }
 
     public void setOutputDir(File outputDir){
-        String outputPath = outputDir.getAbsolutePath();
         if(!outputDir.getName().equalsIgnoreCase(Globals.lumaDirName)){
-            outputPath += File.separator + Globals.lumaDirName;
+            outputDir = new File(outputDir, Globals.lumaDirName);
         }
         wLock();
-        this.outputDir = new File(outputPath);
+        this.outputDir = outputDir;
         wUnlock();
     }
 

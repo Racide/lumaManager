@@ -1,7 +1,5 @@
 package manager.view.components;
 
-import manager.model.Globals;
-
 import javax.swing.JTextField;
 import java.awt.Color;
 import java.awt.event.FocusEvent;
@@ -18,7 +16,7 @@ public class GTextField extends JTextField implements FocusListener{
 
     @Override
     public void focusGained(FocusEvent e){
-        setForeground(Globals.DARK_CHARCOAL);
+        setForeground(ViewGlobals.DARK_CHARCOAL);
         setBackground(Color.LIGHT_GRAY);
     }
 

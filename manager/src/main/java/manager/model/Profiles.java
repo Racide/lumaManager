@@ -32,10 +32,14 @@ public class Profiles extends AbstractListModel<Profiles.Profile> implements Com
     public void addProfile(Profile profile){
         wLock();
         modelOperation(() -> {
-            if(!profiles.contains(profile)){
-                int index = profiles.size();
+            int index = profiles.indexOf(profile);
+            if(index == -1){
+                index = profiles.size();
                 profiles.add(profile);
-                fireIntervalAdded(this, index, index);
+            }
+            fireIntervalAdded(this, index, index);
+            for(SteamApp steamApp : profile.steamApps){
+                getElementAt(index).addSteamApp(steamApp);
             }
         });
         wUnlock();
@@ -94,14 +98,14 @@ public class Profiles extends AbstractListModel<Profiles.Profile> implements Com
             steamApps = new ArrayList<>();
         }
 
+        public Profile(AbstractProfile abstractProfile){
+            name = abstractProfile.getName();
+            steamApps = new ArrayList<>(abstractProfile.getSteamapps());
+        }
+
         private Profile(){
             name = "Default";
             steamApps = new ArrayList<>();
-        }
-
-        private Profile(ProfileAdapter.ProfileJson profileJson){
-            name = profileJson.name;
-            steamApps = new ArrayList<>(profileJson.steamApps);
         }
 
         public List<SteamApp> getSteamApps(){
@@ -167,6 +171,12 @@ public class Profiles extends AbstractListModel<Profiles.Profile> implements Com
             return Objects.hash(name);
         }
 
+        private interface AbstractProfile{
+            String getName();
+
+            List<SteamApp> getSteamapps();
+        }
+
         public static class ProfileAdapter{
             @ToJson
             ProfileJson toJson(Profile profile){
@@ -178,7 +188,7 @@ public class Profiles extends AbstractListModel<Profiles.Profile> implements Com
                 return new Profile(profileJson);
             }
 
-            private static class ProfileJson{
+            private static class ProfileJson implements AbstractProfile{
                 private final String name;
                 private final List<SteamApp> steamApps;
 
@@ -186,6 +196,35 @@ public class Profiles extends AbstractListModel<Profiles.Profile> implements Com
                     name = profile.name;
                     steamApps = profile.steamApps;
                 }
+
+                @Override
+                public String getName(){
+                    return name;
+                }
+
+                @Override
+                public List<SteamApp> getSteamapps(){
+                    return steamApps;
+                }
+            }
+        }
+
+        public static class GLRMProfileJson implements AbstractProfile{
+            private String name;
+            private List<SteamApp.GLRMSteamAppJson> games;
+
+            @Override
+            public String getName(){
+                return name;
+            }
+
+            @Override
+            public List<SteamApp> getSteamapps(){
+                final List<SteamApp> steamApps = new LinkedList<>();
+                for(SteamApp.GLRMSteamAppJson game : games){
+                    steamApps.add(new SteamApp(game));
+                }
+                return steamApps;
             }
         }
     }
