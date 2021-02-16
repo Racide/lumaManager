@@ -13,7 +13,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 public interface Globals{
-    String version = "v1.1.0";
+    String version = "v1.1.1";
     String lumaDirName = "AppList";
     File dataFile = new File("data.json");
     int maxSteamApps = 140;
@@ -21,6 +21,7 @@ public interface Globals{
     Moshi moshi = new Moshi.Builder().add(new Globals.FileAdapter())
                                      .add(new Profiles.ProfilesAdapter())
                                      .add(new Profiles.Profile.ProfileAdapter())
+                                     .add(new SteamApp.GLRMSteamAppAdapter())
                                      .build();
 
     /**

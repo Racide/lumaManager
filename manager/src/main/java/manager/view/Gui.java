@@ -90,7 +90,7 @@ public class Gui{
     }
 
     private Gui(){
-        frame = new JFrame();
+        frame = new JFrame("GreenLuma Manager");
         frame.setIconImages(Arrays.asList(new ImageIcon(Gui.class.getResource("/images/logo16.png")).getImage(),
                 new ImageIcon(Gui.class.getResource("/images/logo32.png")).getImage(),
                 new ImageIcon(Gui.class.getResource("/images/logo48.png")).getImage(),
@@ -368,7 +368,7 @@ public class Gui{
         public Optional<File> fileChooser(@Nullable File outputDir, @Nullable String[] extensions){
             final JFileChooser fc = new JFileChooser();
             fc.setDialogTitle("Select a file");
-            if(extensions != null){
+            if(Optional.ofNullable(extensions).isPresent()){
                 fc.setFileFilter(new FileFilter(){
                     @Override
                     public boolean accept(File f){

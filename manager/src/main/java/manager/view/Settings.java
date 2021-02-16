@@ -62,7 +62,6 @@ public class Settings{
         gbc_tfOutputPath.gridx = 0;
         gbc_tfOutputPath.gridy = 1;
         contentPane.add(tfOutputPath, gbc_tfOutputPath);
-        // textField.setColumns(10);
 
         btBrowse = new GButton("...");
         btBrowse.setFont(mediumFont);
@@ -85,8 +84,9 @@ public class Settings{
 
         btShortcut = new GButton("Create a shortcut");
         btShortcut.setFont(mediumFont);
+        btShortcut.setEnabled(false);
         final GridBagConstraints gbc_btShortcut = new GridBagConstraints();
-        gbc_btShortcut.insets = new Insets(0, 0, 5, 0);
+        gbc_btShortcut.insets = new Insets(0, 0, 10, 0);
         gbc_btShortcut.fill = GridBagConstraints.VERTICAL;
         gbc_btShortcut.gridwidth = 2;
         gbc_btShortcut.gridx = 0;

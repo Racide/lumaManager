@@ -13,7 +13,7 @@ import static manager.model.Globals.moshi;
 
 public class Data{
     private static final ReadWriteLock lock = new ReentrantReadWriteLock(true);
-    private static final JsonAdapter<Data> jsonAdapter = moshi.adapter(Data.class).nonNull();
+    private static final JsonAdapter<Data> jsonAdapter = moshi.adapter(Data.class).nonNull().indent("    ");
     private String ignoreVersion;
     public File outputDir;
     public final Profiles profiles;

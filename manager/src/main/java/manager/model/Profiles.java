@@ -192,7 +192,7 @@ public class Profiles extends AbstractListModel<Profiles.Profile> implements Com
                 private final String name;
                 private final List<SteamApp> steamApps;
 
-                ProfileJson(Profile profile){
+                private ProfileJson(Profile profile){
                     name = profile.name;
                     steamApps = profile.steamApps;
                 }
@@ -211,7 +211,11 @@ public class Profiles extends AbstractListModel<Profiles.Profile> implements Com
 
         public static class GLRMProfileJson implements AbstractProfile{
             private String name;
-            private List<SteamApp.GLRMSteamAppJson> games;
+            private List<SteamApp.GLRMSteamAppAdapter.GLRMSteamAppJson> games;
+
+            private GLRMProfileJson(){
+
+            }
 
             @Override
             public String getName(){
@@ -221,8 +225,10 @@ public class Profiles extends AbstractListModel<Profiles.Profile> implements Com
             @Override
             public List<SteamApp> getSteamapps(){
                 final List<SteamApp> steamApps = new LinkedList<>();
-                for(SteamApp.GLRMSteamAppJson game : games){
-                    steamApps.add(new SteamApp(game));
+                for(SteamApp.GLRMSteamAppAdapter.GLRMSteamAppJson game : games){
+                    if(game.valid){
+                        steamApps.add(new SteamApp(game));
+                    }
                 }
                 return steamApps;
             }

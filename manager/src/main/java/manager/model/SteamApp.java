@@ -1,5 +1,7 @@
 package manager.model;
 
+import com.squareup.moshi.FromJson;
+
 public class SteamApp{
     public final long id;
     public final String title;
@@ -39,7 +41,7 @@ public class SteamApp{
     }
 
     public enum Type{
-        GAME, DLC;
+        GAME, DLC, APPLICATION;
 
         public static boolean contains(final String s){
             for(Type value : Type.values()){
@@ -68,27 +70,38 @@ public class SteamApp{
         Type getType();
     }
 
-    public static class GLRMSteamAppJson implements AbstractSteamApp{
-        private long id;
-        private String name;
-        private String type;
-
-        @Override
-        public long getId(){
-            return id;
+    public static class GLRMSteamAppAdapter{
+        @FromJson
+        GLRMSteamAppJson fromJson(GLRMSteamAppJson glrmSteamAppJson){
+            if(Type.contains(glrmSteamAppJson.type) && glrmSteamAppJson.name.length() >= 1){
+                glrmSteamAppJson.valid = true;
+            }
+            return glrmSteamAppJson;
         }
 
-        @Override
-        public String getTitle(){
-            return name;
-        }
+        public static class GLRMSteamAppJson implements AbstractSteamApp{
+            private long id;
+            private String name;
+            private String type;
+            public transient boolean valid = false;
 
-        @Override
-        public Type getType(){
-            if(Type.contains(type)){
+            private GLRMSteamAppJson(){
+
+            }
+
+            @Override
+            public long getId(){
+                return id;
+            }
+
+            @Override
+            public String getTitle(){
+                return name;
+            }
+
+            @Override
+            public Type getType(){
                 return Type.fromString(type);
-            }else{
-                return Type.GAME;
             }
         }
     }

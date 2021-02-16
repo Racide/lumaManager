@@ -79,6 +79,10 @@ public class Crawler{
             Logger.warn("appId is not a number");
             return;
         }
+        if(title.length()<1){
+            Logger.warn("empty title");
+            return;
+        }
         if(!SteamApp.Type.contains(type)){
             Logger.info("unsupported type skipped ({})", type);
             return;
