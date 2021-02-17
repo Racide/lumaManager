@@ -392,16 +392,14 @@ public class Gui{
             return Optional.of(fc.getSelectedFile());
         }
 
-        public Optional<File> fileSave(File defaultFile, @Nullable File outputDir){
+        public Optional<File> fileSave(File outputFile){
             final JFileChooser fc = new JFileChooser();
             fc.setDialogTitle("Save file");
-            fc.setDialogType(JFileChooser.SAVE_DIALOG);
-            fc.setCurrentDirectory(outputDir);
-            fc.setSelectedFile(defaultFile);
+            fc.setSelectedFile(outputFile);
             if(fc.showSaveDialog(frame) != JFileChooser.APPROVE_OPTION){
                 return Optional.empty();
             }
-            String extension = defaultFile.getName();
+            String extension = outputFile.getName();
             if(extension.lastIndexOf('.') != -1){
                 extension = extension.substring(extension.lastIndexOf('.'));
             }else{

@@ -74,7 +74,7 @@ public class Settings{
         tfOutputPath.setFont(mediumFont);
         tfOutputPath.setEditable(false);
         final GridBagConstraints gbc_tfOutputPath = new GridBagConstraints();
-        gbc_tfOutputPath.insets = new Insets(0, 0, 5, 5);
+        gbc_tfOutputPath.insets = new Insets(0, 0, 20, 5);
         gbc_tfOutputPath.fill = GridBagConstraints.BOTH;
         gbc_tfOutputPath.gridx = 0;
         gbc_tfOutputPath.gridy = 1;
@@ -83,7 +83,7 @@ public class Settings{
         btBrowse = new GButton("...");
         btBrowse.setFont(mediumFont);
         GridBagConstraints gbc_btBrowse = new GridBagConstraints();
-        gbc_btBrowse.insets = new Insets(0, 0, 5, 0);
+        gbc_btBrowse.insets = new Insets(0, 0, 20, 0);
         gbc_btBrowse.fill = GridBagConstraints.BOTH;
         gbc_btBrowse.gridx = 1;
         gbc_btBrowse.gridy = 1;
@@ -103,7 +103,7 @@ public class Settings{
         btShortcut.setFont(mediumFont);
         final GridBagConstraints gbc_btShortcut = new GridBagConstraints();
         gbc_btShortcut.insets = new Insets(0, 0, 10, 0);
-        gbc_btShortcut.fill = GridBagConstraints.VERTICAL;
+        gbc_btShortcut.fill = GridBagConstraints.BOTH;
         gbc_btShortcut.gridwidth = 2;
         gbc_btShortcut.gridx = 0;
         gbc_btShortcut.gridy = 3;
@@ -112,9 +112,9 @@ public class Settings{
         btImport = new GButton("Import a GLR Manager profile");
         btImport.setFont(mediumFont);
         final GridBagConstraints gbc_btImport = new GridBagConstraints();
-        gbc_btImport.fill = GridBagConstraints.VERTICAL;
+        gbc_btImport.fill = GridBagConstraints.BOTH;
         gbc_btImport.gridwidth = 2;
-        gbc_btImport.insets = new Insets(0, 0, 0, 5);
+        gbc_btImport.insets = new Insets(0, 0, 5, 0);
         gbc_btImport.gridx = 0;
         gbc_btImport.gridy = 4;
         contentPane.add(btImport, gbc_btImport);

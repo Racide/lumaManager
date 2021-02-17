@@ -72,11 +72,12 @@ public class Data{
 
     public Profiles.Profile getLastProfile(){
         wLock();
-        final Profiles.Profile profile = profiles.getFromName(this.lastProfile).orElseGet(() -> {
-            final Profiles.Profile p = profiles.getElementAt(0);
-            setLastProfile(p);
-            return p;
-        });
+        final Profiles.Profile profile = profiles.getFromName(LaunchParams.getProfile().orElse(lastProfile))
+                                                 .orElseGet(() -> {
+                                                     final Profiles.Profile p = profiles.getElementAt(0);
+                                                     setLastProfile(p);
+                                                     return p;
+                                                 });
         wUnlock();
         return profile;
     }

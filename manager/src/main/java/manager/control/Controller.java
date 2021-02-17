@@ -148,13 +148,13 @@ public final class Controller implements Gui.Listener, Settings.Listener{
     @Override
     public void createShortcut(Settings.Controller settings){
         final File workingDir = new File(".");
-        final File logo = new File(workingDir, "logo.ico");
+        final File logo = new File("logo.ico");
         if(!logo.exists() && !Globals.copyResource(Controller.class.getResourceAsStream("/logo.ico"), logo)){
             Logger.error("failed to copy icon to {}", logo.getAbsolutePath());
             gui.writeError(logo);
             return;
         }
-        gui.fileSave(new File("GreenLuma Manager.lnk"), null).ifPresent((shortcut) -> {
+        gui.fileSave(new File("GreenLuma Manager.lnk")).ifPresent((shortcut) -> {
             try{
                 final File jar = new File(Controller.class.getProtectionDomain().getCodeSource().getLocation().toURI());
                 final ShellLink sl = ShellLink.createLink(jar.getAbsolutePath())
