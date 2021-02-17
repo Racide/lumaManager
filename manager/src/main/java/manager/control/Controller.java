@@ -90,6 +90,12 @@ public final class Controller implements Gui.Listener, Settings.Listener{
         }));
     }
 
+    public void settings(){
+        Settings.Controller settings = gui.createSettings(this);
+        settings.populate(data.getOutputDir());
+        settings.initialize();
+    }
+
     // ↓ EDT ONLY ↓
 
     @Override
@@ -112,12 +118,6 @@ public final class Controller implements Gui.Listener, Settings.Listener{
         data.profiles.removeProfile(index);
     }
 
-    public void settings(){
-        Settings.Controller settings = gui.createSettings(this);
-        settings.populate(data.getOutputDir());
-        settings.initialize();
-    }
-
     @Override
     public void setOutputFile(Settings.Controller settings){
         Optional<File> file = gui.folderChooser(data.getOutputDir());
@@ -129,7 +129,7 @@ public final class Controller implements Gui.Listener, Settings.Listener{
 
     @Override
     public void importGLRMProfile(Settings.Controller settings){
-        gui.fileChooser(null, new String[]{".json"}).ifPresent((file) -> {
+        gui.fileChooser(null, ".json").ifPresent((file) -> {
             final JsonAdapter<Profiles.Profile.GLRMProfileJson> jsonAdapter = moshi.adapter(Profiles.Profile.GLRMProfileJson.class)
                                                                                    .nonNull();
             try{

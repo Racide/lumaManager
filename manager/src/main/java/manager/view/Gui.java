@@ -15,6 +15,7 @@ import manager.view.components.TextPrompt;
 import manager.view.components.WindowClosing;
 import org.jetbrains.annotations.Nullable;
 import org.tinylog.Logger;
+import org.tinylog.Supplier;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -76,16 +77,18 @@ public class Gui{
     private final JLabel lbVersion;
 
     public static Controller create(Listener listener){
-        RunnableFuture<Controller> rf = new FutureTask<>(() -> {
-            final Gui gui = new Gui();
-            return gui.new Controller(gui, listener);
-        });
-        SwingUtilities.invokeLater(rf);
-        try{
-            return rf.get();
-        }catch(InterruptedException | ExecutionException ex){
-            Logger.error(ex, "failed to instantiate gui+controller asynchronously");
-            throw new RuntimeException(ex);
+        Supplier<Gui> guiSupplier = Gui::new;
+        if(SwingUtilities.isEventDispatchThread()){
+            return guiSupplier.get().new Controller(listener);
+        }else{
+            RunnableFuture<Gui> rf = new FutureTask<>(guiSupplier::get);
+            SwingUtilities.invokeLater(rf);
+            try{
+                return rf.get().new Controller(listener);
+            }catch(InterruptedException | ExecutionException ex){
+                Logger.error(ex, "failed to instantiate gui+controller on EDT");
+                throw new RuntimeException(ex);
+            }
         }
     }
 
@@ -291,12 +294,9 @@ public class Gui{
     }
 
     public class Controller implements ActionListener, WindowClosing, ListDataListener{
-        @SuppressWarnings("FieldCanBeLocal")
-        private final Gui gui;
         private final Listener listener;
 
-        public Controller(Gui gui, Listener listener){
-            this.gui = gui;
+        public Controller(Listener listener){
             this.listener = listener;
         }
 
@@ -365,7 +365,7 @@ public class Gui{
             return Optional.of(fc.getSelectedFile());
         }
 
-        public Optional<File> fileChooser(@Nullable File outputDir, @Nullable String[] extensions){
+        public Optional<File> fileChooser(@Nullable File outputDir, @Nullable String... extensions){
             final JFileChooser fc = new JFileChooser();
             fc.setDialogTitle("Select a file");
             if(Optional.ofNullable(extensions).isPresent()){
@@ -472,11 +472,11 @@ public class Gui{
             return Optional.of(s.trim());
         }
 
-        // ↓ EDT ONLY ↓
-
         public Settings.Controller createSettings(Settings.Listener listener){
             return Settings.create(frame, listener);
         }
+
+        // ↓ EDT ONLY ↓
 
         @Override
         public void intervalAdded(ListDataEvent e){

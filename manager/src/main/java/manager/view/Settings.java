@@ -1,6 +1,8 @@
 package manager.view;
 
 import manager.view.components.GButton;
+import org.tinylog.Logger;
+import org.tinylog.Supplier;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -10,12 +12,16 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.RunnableFuture;
 
 import static manager.view.components.ViewGlobals.mediumFont;
 
@@ -27,8 +33,19 @@ public class Settings{
     private final JButton btImport;
 
     public static Settings.Controller create(JFrame parent, Settings.Listener listener){
-        final Settings settings = new Settings(parent);
-        return settings.new Controller(settings, listener);
+        Supplier<Settings> settingsSupplier = () -> new Settings(parent);
+        if(SwingUtilities.isEventDispatchThread()){
+            return settingsSupplier.get().new Controller(listener);
+        }else{
+            RunnableFuture<Settings> rf = new FutureTask<>(settingsSupplier::get);
+            SwingUtilities.invokeLater(rf);
+            try{
+                return rf.get().new Controller(listener);
+            }catch(InterruptedException | ExecutionException ex){
+                Logger.error(ex, "failed to instantiate settings+controller on EDT");
+                throw new RuntimeException(ex);
+            }
+        }
     }
 
     private Settings(JFrame parent){
@@ -105,27 +122,29 @@ public class Settings{
     }
 
     public class Controller implements ActionListener{
-        private final Settings settings;
         private final Listener listener;
 
-        public Controller(Settings settings, Settings.Listener listener){
-            this.settings = settings;
+        public Controller(Settings.Listener listener){
             this.listener = listener;
         }
 
         public void initialize(){
-            btBrowse.addActionListener(this);
-            btImport.addActionListener(this);
-            btShortcut.addActionListener(this);
+            SwingUtilities.invokeLater(() -> {
+                btBrowse.addActionListener(this);
+                btImport.addActionListener(this);
+                btShortcut.addActionListener(this);
 
-            dialog.setVisible(true);
+                dialog.setVisible(true);
+            });
         }
 
         public void populate(File outputDir){
-            tfOutputPath.setText(outputDir.getAbsolutePath());
-            dialog.pack();
-            dialog.setMinimumSize(dialog.getSize());
-            dialog.setLocationRelativeTo(dialog.getRootPane());
+            SwingUtilities.invokeLater(() -> {
+                tfOutputPath.setText(outputDir.getAbsolutePath());
+                dialog.pack();
+                dialog.setMinimumSize(dialog.getSize());
+                dialog.setLocationRelativeTo(dialog.getRootPane());
+            });
         }
 
         @Override
