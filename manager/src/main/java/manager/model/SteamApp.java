@@ -2,6 +2,8 @@ package manager.model;
 
 import com.squareup.moshi.FromJson;
 
+import java.util.Arrays;
+
 public class SteamApp{
     public final long id;
     public final String title;
@@ -44,21 +46,14 @@ public class SteamApp{
         GAME, DLC, APPLICATION;
 
         public static boolean contains(final String s){
-            for(Type value : Type.values()){
-                if(s.equalsIgnoreCase(value.name())){
-                    return true;
-                }
-            }
-            return false;
+            return Arrays.stream(Type.values()).anyMatch((value) -> s.equalsIgnoreCase(value.name()));
         }
 
         public static Type fromString(String s){
-            for(Type value : Type.values()){
-                if(s.equalsIgnoreCase(value.name())){
-                    return value;
-                }
-            }
-            throw new EnumConstantNotPresentException(Type.class, s);
+            return Arrays.stream(Type.values())
+                         .filter((value) -> s.equalsIgnoreCase(value.name()))
+                         .findAny()
+                         .orElseThrow(() -> new EnumConstantNotPresentException(Type.class, s));
         }
     }
 

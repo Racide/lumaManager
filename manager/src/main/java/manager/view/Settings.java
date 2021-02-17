@@ -101,7 +101,6 @@ public class Settings{
 
         btShortcut = new GButton("Create a shortcut");
         btShortcut.setFont(mediumFont);
-        btShortcut.setEnabled(false);
         final GridBagConstraints gbc_btShortcut = new GridBagConstraints();
         gbc_btShortcut.insets = new Insets(0, 0, 10, 0);
         gbc_btShortcut.fill = GridBagConstraints.VERTICAL;

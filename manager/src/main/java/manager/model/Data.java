@@ -14,8 +14,9 @@ import static manager.model.Globals.moshi;
 public class Data{
     private static final ReadWriteLock lock = new ReentrantReadWriteLock(true);
     private static final JsonAdapter<Data> jsonAdapter = moshi.adapter(Data.class).nonNull().indent("    ");
-    private String ignoreVersion;
-    public File outputDir;
+    private String lastProfile = "Default";
+    private String ignoreVersion = Globals.version;
+    private File outputDir;
     public final Profiles profiles;
 
     public static Data loadData() throws NullPointerException, IOException{
@@ -29,7 +30,6 @@ public class Data{
     }
 
     private Data(){
-        ignoreVersion = Globals.version;
         profiles = new Profiles();
     }
 
@@ -49,6 +49,12 @@ public class Data{
         lock.writeLock().unlock();
     }
 
+    public void setLastProfile(Profiles.Profile profile){
+        wLock();
+        lastProfile = profile.name;
+        wUnlock();
+    }
+
     public void setIgnoreVersion(String ignoreVersion){
         wLock();
         this.ignoreVersion = ignoreVersion;
@@ -62,6 +68,17 @@ public class Data{
         wLock();
         this.outputDir = outputDir;
         wUnlock();
+    }
+
+    public Profiles.Profile getLastProfile(){
+        wLock();
+        final Profiles.Profile profile = profiles.getFromName(this.lastProfile).orElseGet(() -> {
+            final Profiles.Profile p = profiles.getElementAt(0);
+            setLastProfile(p);
+            return p;
+        });
+        wUnlock();
+        return profile;
     }
 
     public String getIgnoreVersion(){

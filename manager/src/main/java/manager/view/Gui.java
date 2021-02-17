@@ -323,17 +323,17 @@ public class Gui{
             });
         }
 
-        public void setProfiles(Profiles profiles){
+        public void setProfiles(Profiles.Profile lastProfile, Profiles profiles){
             SwingUtilities.invokeLater(() -> {
                 cbProfiles.setModel(profiles);
                 if(Arrays.stream(profiles.getListDataListeners()).noneMatch(listener -> listener == this)){
                     profiles.addListDataListener(this);
                 }
-                cbProfiles.setSelectedIndex(0);
+                cbProfiles.setSelectedItem(lastProfile);
             });
         }
 
-        public boolean oldVersion(String newVersion, boolean warn){
+        public boolean showOldVersion(String newVersion, boolean warn){
             SwingUtilities.invokeLater(() -> lbVersion.setText(lbVersion.getText() + "(OLD)"));
             if(warn){
                 String[] options = new String[]{"Ok", "Don't ask again for this version"};
@@ -392,15 +392,26 @@ public class Gui{
             return Optional.of(fc.getSelectedFile());
         }
 
-        public Optional<File> fileSave(@Nullable File outputDir){
+        public Optional<File> fileSave(File defaultFile, @Nullable File outputDir){
             final JFileChooser fc = new JFileChooser();
-            fc.setDialogTitle("Select the output file");
+            fc.setDialogTitle("Save file");
             fc.setDialogType(JFileChooser.SAVE_DIALOG);
             fc.setCurrentDirectory(outputDir);
-            if(fc.showOpenDialog(frame) != JFileChooser.APPROVE_OPTION){
+            fc.setSelectedFile(defaultFile);
+            if(fc.showSaveDialog(frame) != JFileChooser.APPROVE_OPTION){
                 return Optional.empty();
             }
-            return Optional.of(fc.getSelectedFile());
+            String extension = defaultFile.getName();
+            if(extension.lastIndexOf('.') != -1){
+                extension = extension.substring(extension.lastIndexOf('.'));
+            }else{
+                extension = "";
+            }
+            File file = fc.getSelectedFile();
+            if(!file.getName().endsWith(extension)){
+                file = new File(file.getAbsolutePath() + extension);
+            }
+            return Optional.of(file);
         }
 
         public void setSearchResults(SearchResults steamApps){
@@ -451,14 +462,7 @@ public class Gui{
                     JOptionPane.ERROR_MESSAGE);
         }
 
-        public void generationError(String outputPath){
-            JOptionPane.showMessageDialog(frame,
-                    "Output couldn't be written correctly to\n" + outputPath + "\nCheck you have the required permissions.",
-                    "Failed to write files",
-                    JOptionPane.ERROR_MESSAGE);
-        }
-
-        private Optional<String> newProfile(){
+        private Optional<String> showNewProfile(){
             String s = (String) JOptionPane.showInputDialog(frame,
                     "Profile name:",
                     "New profile",
@@ -520,7 +524,7 @@ public class Gui{
                 listener.delGames((Profiles.Profile) cbProfiles.getSelectedItem(),
                         Arrays.stream(lsGames.getSelectedIndices()).map(i -> ~i).sorted().map(i -> ~i).toArray());
             }else if(s == btAddProfile){
-                newProfile().ifPresent(listener::addProfile);
+                showNewProfile().ifPresent(listener::addProfile);
             }else if(s == btDelProfile){
                 listener.delProfile(cbProfiles.getSelectedIndex());
             }else if(s == btSettings){
@@ -535,7 +539,7 @@ public class Gui{
         @Override
         public void windowClosing(WindowEvent e){
             loading(true);
-            listener.serialize(); // IO short enough for EDT
+            listener.close(); // IO short enough for EDT
             System.exit(0);
         }
 
@@ -577,7 +581,7 @@ public class Gui{
 
         void generate(Profiles.Profile profile);
 
-        void serialize();
+        void close();
 
         void settings();
     }

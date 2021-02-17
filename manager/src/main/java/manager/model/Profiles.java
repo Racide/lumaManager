@@ -12,6 +12,7 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import static manager.model.Data.*;
 
@@ -65,6 +66,13 @@ public class Profiles extends AbstractListModel<Profiles.Profile> implements Com
         return profile;
     }
 
+    public Optional<Profile> getFromName(String name){
+        rLock();
+        Optional<Profile> profile = profiles.stream().filter((p) -> name.equalsIgnoreCase(p.name)).findAny();
+        rUnlock();
+        return profile;
+    }
+
     @Override
     public int getSize(){
         rLock();
@@ -90,7 +98,7 @@ public class Profiles extends AbstractListModel<Profiles.Profile> implements Com
     }
 
     public static class Profile extends AbstractListModel<SteamApp>{
-        private final String name;
+        public final String name;
         private final List<SteamApp> steamApps;
 
         public Profile(String name){

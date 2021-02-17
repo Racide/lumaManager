@@ -13,7 +13,7 @@ dependencies{
     implementation("com.squareup.okhttp3:okhttp:4.9.0")
     implementation("com.squareup.okio:okio:2.10.0")
     implementation("com.squareup.moshi:moshi:1.11.0")
-    implementation("com.github.vatbub:mslinks:1.0.6")
+    implementation("com.github.vatbub:mslinks:1.0.5")
     implementation("org.tinylog:tinylog-impl:2.2.1")
     compileOnly("org.tinylog:tinylog-api:2.2.1")
 }
@@ -22,7 +22,7 @@ application{
     setMainClassName("manager.Main")
 }
 
-version "v1.1.1"
+version "v1.2.0"
 
 tasks.withType(AbstractArchiveTask){
     preserveFileTimestamps = false

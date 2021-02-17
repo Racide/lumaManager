@@ -1,6 +1,7 @@
 /.*
 /*.json
 /*.txt
+/*.ico
 build
 !.gitignore
 !.github

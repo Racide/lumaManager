@@ -12,7 +12,7 @@
 
 * resizable ui (small resolution friendly)
 * import original python manager profile files
-* ~~automatic shortcut creation~~
+* automatic shortcut creation
 * powerful future-proof scraping with HTMLUnit headless browser
 * robust-until-proven-otherwise concurrency. Should be easy to expand
 * json-based persistent data
@@ -21,7 +21,6 @@
 
 ### Known issues
 
-* "create shortcut" button is currently disabled due to upstream issues
 * unsupported glyphs are not shown correctly. This is a shortcoming of Swing. Might me fixed by a modern LAF like flatlaf
 * considerable Jar size
 

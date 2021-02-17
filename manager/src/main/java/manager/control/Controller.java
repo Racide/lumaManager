@@ -12,12 +12,14 @@ import manager.model.SteamApp;
 import manager.model.Updater;
 import manager.view.Gui;
 import manager.view.Settings;
+import mslinks.ShellLink;
 import okio.BufferedSink;
 import okio.Okio;
 import org.tinylog.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
@@ -34,7 +36,7 @@ public final class Controller implements Gui.Listener, Settings.Listener{
         gui.setLoading(true);
         initializeData();
         gui.setLoading(false);
-        checkUpdate();
+        checkUpdates();
     }
 
     @Override
@@ -58,7 +60,7 @@ public final class Controller implements Gui.Listener, Settings.Listener{
     }
 
     @Override
-    public void serialize(){
+    public void close(){
         try{
             data.serialize();
         }catch(IOException ex){
@@ -79,12 +81,12 @@ public final class Controller implements Gui.Listener, Settings.Listener{
                 System.exit(0);
             }
         }
-        gui.setProfiles(data.profiles);
+        gui.setProfiles(data.getLastProfile(), data.profiles);
     }
 
-    private void checkUpdate(){
+    private void checkUpdates(){
         CompletableFuture.runAsync(() -> Updater.checkUpdates().ifPresent((newVersion) -> {
-            if(gui.oldVersion(newVersion, !newVersion.equals(data.getIgnoreVersion()))){
+            if(gui.showOldVersion(newVersion, !newVersion.equals(data.getIgnoreVersion()))){
                 data.setIgnoreVersion(newVersion);
             }
         }));
@@ -145,26 +147,28 @@ public final class Controller implements Gui.Listener, Settings.Listener{
 
     @Override
     public void createShortcut(Settings.Controller settings){
-        // final File workingDir = new File(".");
-        // if(!Globals.copyResource(Controller.class.getResourceAsStream("/logo.ico"), workingDir)){
-        //     return;
-        // }
-        // gui.fileSave(new File(System.getProperty("user.home"), "Luma Manager")).ifPresent((shortcut) -> {
-        //     try{
-        //         final File jar = new File(Controller.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-        //         System.out.println(jar.getAbsolutePath()); // todo
-        //         final ShellLink sl = ShellLink.createLink(jar.getAbsolutePath())
-        //                                       .setWorkingDir(workingDir.getAbsolutePath())
-        //                                       .setIconLocation(new File(workingDir, "logo.ico").getAbsolutePath());
-        //         sl.saveTo(shortcut.getAbsolutePath());
-        //     }catch(URISyntaxException ex){
-        //         Logger.error(ex, "failed to get current jar path");
-        //         throw new RuntimeException(ex);
-        //     }catch(IOException ex){
-        //         Logger.error(ex, "failed to write shortcut file to {}", shortcut.getAbsolutePath());
-        //         gui.generationError(shortcut.getAbsolutePath());
-        //     }
-        // });
+        final File workingDir = new File(".");
+        final File logo = new File(workingDir, "logo.ico");
+        if(!logo.exists() && !Globals.copyResource(Controller.class.getResourceAsStream("/logo.ico"), logo)){
+            Logger.error("failed to copy icon to {}", logo.getAbsolutePath());
+            gui.writeError(logo);
+            return;
+        }
+        gui.fileSave(new File("GreenLuma Manager.lnk"), null).ifPresent((shortcut) -> {
+            try{
+                final File jar = new File(Controller.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+                final ShellLink sl = ShellLink.createLink(jar.getAbsolutePath())
+                                              .setWorkingDir(workingDir.getAbsolutePath())
+                                              .setIconLocation(logo.getAbsolutePath());
+                sl.saveTo(shortcut.getAbsolutePath());
+            }catch(URISyntaxException ex){
+                Logger.error(ex, "failed to get current jar path");
+                throw new RuntimeException(ex);
+            }catch(IOException ex){
+                Logger.error(ex, "failed to write shortcut file to {}", shortcut.getAbsolutePath());
+                gui.writeError(shortcut);
+            }
+        });
     }
 
     public void generate(Profiles.Profile profile){
@@ -199,7 +203,8 @@ public final class Controller implements Gui.Listener, Settings.Listener{
             }
         }catch(IOException ex){
             Logger.error(ex, "generation failed");
-            gui.generationError(outputPath);
+            gui.writeError(outputDir);
         }
+        data.setLastProfile(profile);
     }
 }
