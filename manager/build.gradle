@@ -23,7 +23,7 @@ application{
     setMainClassName("manager.Main")
 }
 
-version "v1.3.0"
+version "v1.3.1"
 
 tasks.withType(AbstractArchiveTask){
     preserveFileTimestamps = false

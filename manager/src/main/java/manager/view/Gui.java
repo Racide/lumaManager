@@ -73,11 +73,11 @@ public class Gui{
                 new ImageIcon(Gui.class.getResource("/images/logo32.png")).getImage(),
                 new ImageIcon(Gui.class.getResource("/images/logo48.png")).getImage(),
                 new ImageIcon(Gui.class.getResource("/images/logo256.png")).getImage()));
+        frame.setMinimumSize(new Dimension(600, 300));
         frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
         final JPanel containerFooter = new JPanel();
         containerFooter.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        containerFooter.setSize(new Dimension(100, 100));
         frame.getContentPane().add(containerFooter, BorderLayout.SOUTH);
         final GridBagLayout gbl_containerFooter = new GridBagLayout();
         gbl_containerFooter.columnWeights = new double[]{1.0, 0.0, 1.0};
@@ -115,6 +115,7 @@ public class Gui{
         containerFooter.add(lbVersion, gbc_lbVersion);
 
         final JSplitPane splitPane = new JSplitPane();
+        splitPane.setResizeWeight(1.0);
         frame.getContentPane().add(splitPane, BorderLayout.CENTER);
 
         final JPanel containerSearch = new JPanel();
@@ -122,8 +123,6 @@ public class Gui{
         containerSearch.setPreferredSize(new Dimension(600, 500));
         splitPane.setLeftComponent(containerSearch);
         final GridBagLayout gbl_containerSearch = new GridBagLayout();
-        gbl_containerSearch.columnWidths = new int[]{89, 0, 0};
-        gbl_containerSearch.rowHeights = new int[]{14, 20, 229, 23, 0};
         gbl_containerSearch.columnWeights = new double[]{1.0, 0.0, Double.MIN_VALUE};
         gbl_containerSearch.rowWeights = new double[]{0.0, 0.0, 1.0, 0.0, Double.MIN_VALUE};
         containerSearch.setLayout(gbl_containerSearch);
@@ -395,6 +394,7 @@ public class Gui{
                                                                                                  .getWidth());
                 tbResults.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
                 loading(false);
+                tbResults.requestFocusInWindow();
             });
         }
 
@@ -477,7 +477,6 @@ public class Gui{
         public void actionPerformed(ActionEvent e){
             JComponent s = (JComponent) e.getSource();
             if(s == tfSearch || s == btQuery){
-                tbResults.requestFocusInWindow();
                 String query = tfSearch.getText();
                 if(query.length() >= 1){
                     loading(true);
