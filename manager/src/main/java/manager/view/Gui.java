@@ -77,7 +77,7 @@ public class Gui{
         frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
         final JPanel containerFooter = new JPanel();
-        containerFooter.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        containerFooter.setBorder(BorderFactory.createEmptyBorder(0, 5, 5, 5));
         frame.getContentPane().add(containerFooter, BorderLayout.SOUTH);
         final GridBagLayout gbl_containerFooter = new GridBagLayout();
         gbl_containerFooter.columnWeights = new double[]{1.0, 0.0, 1.0};
@@ -92,6 +92,7 @@ public class Gui{
                                                                                                         Image.SCALE_SMOOTH)));
         final GridBagConstraints gbc_btSettings = new GridBagConstraints();
         gbc_btSettings.anchor = GridBagConstraints.SOUTHWEST;
+        gbc_btSettings.insets = new Insets(10, 0, 0, 0);
         gbc_btSettings.gridx = 0;
         gbc_btSettings.gridy = 0;
         containerFooter.add(btSettings, gbc_btSettings);
@@ -273,7 +274,7 @@ public class Gui{
         }
 
         public void initialize(){
-            setSearchResults(new SearchResults());
+            setSearchResults(new SearchResults(SearchResults.Status.OK));
             SwingUtilities.invokeLater(() -> {
                 lbVersion.setText(Globals.version);
 
@@ -290,8 +291,15 @@ public class Gui{
 
                 frame.pack();
                 frame.setLocationRelativeTo(null);
+                loading(true);
                 frame.setVisible(true);
-                frame.requestFocusInWindow();
+            });
+        }
+
+        public void dataLoaded(){
+            SwingUtilities.invokeLater(() -> {
+                loading(false);
+                tfSearch.requestFocusInWindow();
             });
         }
 
@@ -320,10 +328,6 @@ public class Gui{
             }else{
                 return false;
             }
-        }
-
-        public void setLoading(boolean loading){
-            SwingUtilities.invokeLater(() -> loading(loading));
         }
 
         public Optional<File> folderChooser(@Nullable File outputDir){
@@ -384,15 +388,16 @@ public class Gui{
             return Optional.of(file);
         }
 
-        public void setSearchResults(SearchResults steamApps){
+        public void setSearchResults(SearchResults searchResults){
             SwingUtilities.invokeLater(() -> {
-                tbResults.setModel(steamApps);
+                tbResults.setModel(searchResults);
                 tbResults.tableColumnAdjuster.adjustColumns();
                 final TableColumnModel tcm = tbResults.getColumnModel();
                 tcm.getColumn(1)
                    .setWidth(tbResults.getParent().getWidth() - tcm.getColumn(0).getWidth() - tcm.getColumn(2)
                                                                                                  .getWidth());
                 tbResults.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+                searchResultsStatus(searchResults.status);
                 loading(false);
                 tbResults.requestFocusInWindow();
             });
@@ -535,6 +540,11 @@ public class Gui{
 
         private void setProfile(Profiles.Profile profile){
             lsGames.setModel(profile);
+        }
+
+        private void searchResultsStatus(SearchResults.Status status){
+            tfSearch.putClientProperty("JComponent.outline", status.value);
+            tfSearch.repaint(); // makes outline immediately visible
         }
     }
 

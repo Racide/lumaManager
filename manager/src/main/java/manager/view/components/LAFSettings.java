@@ -17,6 +17,7 @@ public class LAFSettings{
             Logger.error(ex, "failed to load LAF");
             System.exit(1);
         }
+        UIManager.put("TextComponent.arc", 5);
         UIManager.put("ScrollBar.showButtons", true);
         UIManager.put("ScrollBar.width", 16);
         UIManager.put("ProgressBar.cycleTime", 1000);

@@ -33,9 +33,8 @@ public final class Controller implements Gui.Listener, Settings.Listener{
 
     public Controller(){
         gui.initialize();
-        gui.setLoading(true);
         initializeData();
-        gui.setLoading(false);
+        gui.dataLoaded();
         checkUpdates();
     }
 
@@ -43,7 +42,7 @@ public final class Controller implements Gui.Listener, Settings.Listener{
     public void search(final String query){
         CompletableFuture.runAsync(() -> {
             try{
-                gui.setSearchResults(new SearchResults(Crawler.search(query)));
+                gui.setSearchResults(Crawler.search(query));
                 return;
             }catch(FailingHttpStatusCodeException ex){
                 Logger.error(ex, "page responded with error {}", ex.getStatusCode());
@@ -55,7 +54,7 @@ public final class Controller implements Gui.Listener, Settings.Listener{
                 Logger.error(ex, "connection error");
                 gui.connectionError();
             }
-            gui.setSearchResults(new SearchResults());
+            gui.setSearchResults(new SearchResults(SearchResults.Status.ERROR));
         });
     }
 

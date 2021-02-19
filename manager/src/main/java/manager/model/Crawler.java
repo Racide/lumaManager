@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -25,7 +24,8 @@ public class Crawler{
     private Crawler(){
     }
 
-    public static List<SteamApp> search(final String query) throws FailingHttpStatusCodeException, ElementNotFoundException, IOException{
+    public static SearchResults search(final String query) throws FailingHttpStatusCodeException, ElementNotFoundException, IOException{
+        SearchResults.Status status = SearchResults.Status.OK;
         final HtmlPage page;
         try(final WebClient webClient = new WebClient(BrowserVersion.BEST_SUPPORTED)){
             webClient.getOptions().setCssEnabled(false);
@@ -36,7 +36,7 @@ public class Crawler{
             page = webClient.getPage(buildUrl(query));
         }
         if(page.getFirstByXPath("//div[@class='panel']/p[normalize-space() = 'Nothing was found matching your request']") != null){
-            return Collections.emptyList();
+            return new SearchResults(status);
         }
         final HtmlTable table = page.getFirstByXPath("//table[@id='table-sortable']");
         if(table == null){
@@ -45,24 +45,29 @@ public class Crawler{
         List<SteamApp> steamApps = new LinkedList<>();
         for(final HtmlTableBody body : table.getBodies()){
             if(!body.hasAttribute("hidden")){
+                status = SearchResults.Status.WARN;
                 Logger.warn("result table is missing \"hidden\" attribute");
             }
             List<HtmlTableRow> rows = body.getRows();
             for(final HtmlTableRow row : rows){
                 List<HtmlTableCell> cols = row.getCells();
                 if(cols.size() != 4){
+                    status = SearchResults.Status.WARN;
                     Logger.warn("result table has unexpected amount of columns");
                     break;
                 }
                 DomNode titleNode = cols.get(2).getFirstChild();
                 if(titleNode == null){
+                    status = SearchResults.Status.WARN;
                     Logger.warn("unexpected title html layout");
                     break;
                 }
-                append(steamApps, cols.get(0).asText(), titleNode.asText(), cols.get(1).asText());
+                if(!append(steamApps, cols.get(0).asText(), titleNode.asText(), cols.get(1).asText())){
+                    status = SearchResults.Status.WARN;
+                }
             }
         }
-        return steamApps;
+        return new SearchResults(status, steamApps);
     }
 
     private static String buildUrl(String query){
@@ -74,19 +79,20 @@ public class Crawler{
         }
     }
 
-    private static void append(List<SteamApp> steamApps, String appId, String title, String type){
+    private static boolean append(List<SteamApp> steamApps, String appId, String title, String type){
         if(!NumberUtils.isParsable(appId)){
             Logger.warn("appId is not a number");
-            return;
+            return false;
         }
-        if(title.length()<1){
+        if(title.length() < 1){
             Logger.warn("empty title");
-            return;
+            return false;
         }
         if(!SteamApp.Type.contains(type)){
             Logger.info("unsupported type skipped ({})", type);
-            return;
+            return true;
         }
         steamApps.add(new SteamApp(Long.parseLong(appId), title, SteamApp.Type.fromString(type)));
+        return true;
     }
 }

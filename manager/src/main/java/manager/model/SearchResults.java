@@ -7,12 +7,23 @@ import java.util.List;
 
 public class SearchResults extends AbstractTableModel{
     private final List<SteamApp> steamApps;
+    public final Status status;
 
-    public SearchResults(){
-        this(Collections.emptyList());
+    public enum Status{
+        OK(""), WARN("warning"), ERROR("error");
+        public final String value;
+
+        Status(String value){
+            this.value = value;
+        }
     }
 
-    public SearchResults(List<SteamApp> steamApps){
+    public SearchResults(Status status){
+        this(status, Collections.emptyList());
+    }
+
+    public SearchResults(Status status, List<SteamApp> steamApps){
+        this.status = status;
         this.steamApps = Collections.unmodifiableList(new ArrayList<>(steamApps));
     }
 

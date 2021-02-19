@@ -13,7 +13,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 public interface Globals{
-    String version = "v1.3.1";
+    String version = "v1.3.2";
     String lumaDirName = "AppList";
     File dataFile = new File("data.json");
     int maxSteamApps = 140;
