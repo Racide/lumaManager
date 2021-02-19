@@ -1,5 +1,6 @@
 package manager;
 
+import com.formdev.flatlaf.FlatLightLaf;
 import manager.control.Controller;
 import manager.model.LaunchParams;
 import manager.view.components.LAFSettings;

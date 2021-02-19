@@ -4,38 +4,13 @@ import manager.model.Globals;
 import manager.model.Profiles;
 import manager.model.SearchResults;
 import manager.model.SteamApp;
-import manager.view.components.GButton;
-import manager.view.components.GComboBox;
-import manager.view.components.GContainer;
-import manager.view.components.GScrollPane;
-import manager.view.components.GSplitPane;
 import manager.view.components.GTable;
-import manager.view.components.GTextField;
-import manager.view.components.TextPrompt;
 import manager.view.components.WindowClosing;
 import org.jetbrains.annotations.Nullable;
 import org.tinylog.Logger;
 import org.tinylog.Supplier;
 
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.ListModel;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.WindowConstants;
+import javax.swing.*;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.filechooser.FileFilter;
@@ -100,7 +75,7 @@ public class Gui{
                 new ImageIcon(Gui.class.getResource("/images/logo256.png")).getImage()));
         frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
-        final JPanel containerFooter = new GContainer();
+        final JPanel containerFooter = new JPanel();
         containerFooter.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         containerFooter.setSize(new Dimension(100, 100));
         frame.getContentPane().add(containerFooter, BorderLayout.SOUTH);
@@ -109,7 +84,7 @@ public class Gui{
         gbl_containerFooter.rowWeights = new double[]{0.0};
         containerFooter.setLayout(gbl_containerFooter);
 
-        btSettings = new GButton(null);
+        btSettings = new JButton();
         btSettings.setOpaque(false);
         btSettings.setIcon(new ImageIcon(new ImageIcon(Gui.class.getResource("/images/cog.png")).getImage()
                                                                                                 .getScaledInstance(30,
@@ -121,8 +96,9 @@ public class Gui{
         gbc_btSettings.gridy = 0;
         containerFooter.add(btSettings, gbc_btSettings);
 
-        btGenerate = new GButton("Generate");
-        btGenerate.setBorder(BorderFactory.createEmptyBorder(0, 50, 0, 50));
+        btGenerate = new JButton("Generate");
+        btGenerate.setBorder(BorderFactory.createCompoundBorder(btGenerate.getBorder(),
+                BorderFactory.createEmptyBorder(0, 50, 0, 50)));
         btGenerate.setFont(bigFont);
         final GridBagConstraints gbc_btGenerate = new GridBagConstraints();
         gbc_btGenerate.fill = GridBagConstraints.VERTICAL;
@@ -138,10 +114,10 @@ public class Gui{
         gbc_lbVersion.gridy = 0;
         containerFooter.add(lbVersion, gbc_lbVersion);
 
-        final GSplitPane splitPane = new GSplitPane();
+        final JSplitPane splitPane = new JSplitPane();
         frame.getContentPane().add(splitPane, BorderLayout.CENTER);
 
-        final JPanel containerSearch = new GContainer();
+        final JPanel containerSearch = new JPanel();
         containerSearch.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 5));
         containerSearch.setPreferredSize(new Dimension(600, 500));
         splitPane.setLeftComponent(containerSearch);
@@ -162,11 +138,9 @@ public class Gui{
         gbc_lbTitle.gridy = 0;
         containerSearch.add(lbTitle, gbc_lbTitle);
 
-        tfSearch = new GTextField();
-        tfSearch.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
+        tfSearch = new JTextField();
+        tfSearch.putClientProperty("JTextField.placeholderText", "Search Game");
         tfSearch.setFont(mediumFont);
-        final TextPrompt tp_tfSearch = new TextPrompt("Search Game", tfSearch, TextPrompt.Show.FOCUS_LOST);
-        tp_tfSearch.setBorder(BorderFactory.createEmptyBorder());
         final GridBagConstraints gbc_tfSearch = new GridBagConstraints();
         gbc_tfSearch.fill = GridBagConstraints.BOTH;
         gbc_tfSearch.insets = new Insets(0, 0, 5, 0);
@@ -183,16 +157,15 @@ public class Gui{
         containerSearch.add(containerQuery, gbc_containerQuery);
         containerQuery.setLayout(new CardLayout());
 
-        btQuery = new GButton("Search");
+        btQuery = new JButton("Search");
         btQuery.setFont(mediumFont);
         containerQuery.add(btQuery, "btQuery");
 
         final JProgressBar pbQuery = new JProgressBar();
-        pbQuery.setBorderPainted(false);
         pbQuery.setIndeterminate(true);
         containerQuery.add(pbQuery, "pbQuery");
 
-        final JScrollPane scResults = new GScrollPane();
+        final JScrollPane scResults = new JScrollPane();
         scResults.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         scResults.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         final GridBagConstraints gbc_scResults = new GridBagConstraints();
@@ -204,11 +177,11 @@ public class Gui{
         containerSearch.add(scResults, gbc_scResults);
 
         tbResults = new GTable();
-        tbResults.setFont(defaultFont.deriveFont(Font.PLAIN, 14));
+        tbResults.setShowVerticalLines(true);
         tbResults.getTableHeader().setFont(mediumFont);
         scResults.setViewportView(tbResults);
 
-        btAddGames = new GButton("Add Games");
+        btAddGames = new JButton("Add Games");
         btAddGames.setFont(mediumFont);
         final GridBagConstraints gbc_btAdd = new GridBagConstraints();
         gbc_btAdd.insets = new Insets(0, 0, 0, 5);
@@ -217,7 +190,7 @@ public class Gui{
         gbc_btAdd.gridy = 3;
         containerSearch.add(btAddGames, gbc_btAdd);
 
-        final JPanel containerGames = new GContainer();
+        final JPanel containerGames = new JPanel();
         containerGames.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 5));
         splitPane.setRightComponent(containerGames);
         final GridBagLayout gbl_containerGames = new GridBagLayout();
@@ -234,7 +207,7 @@ public class Gui{
         gbc_lbProfile.gridy = 0;
         containerGames.add(lbProfile, gbc_lbProfile);
 
-        cbProfiles = new GComboBox<>();
+        cbProfiles = new JComboBox<>();
         cbProfiles.setFont(mediumFont);
         final GridBagConstraints gbc_cbProfiles = new GridBagConstraints();
         gbc_cbProfiles.gridwidth = 2;
@@ -244,7 +217,7 @@ public class Gui{
         gbc_cbProfiles.gridy = 1;
         containerGames.add(cbProfiles, gbc_cbProfiles);
 
-        btAddProfile = new GButton("New Profile");
+        btAddProfile = new JButton("New Profile");
         btAddProfile.setFont(mediumFont);
         final GridBagConstraints gbc_btNewProfile = new GridBagConstraints();
         gbc_btNewProfile.anchor = GridBagConstraints.WEST;
@@ -253,7 +226,7 @@ public class Gui{
         gbc_btNewProfile.gridy = 2;
         containerGames.add(btAddProfile, gbc_btNewProfile);
 
-        btDelProfile = new GButton("Delete Profile");
+        btDelProfile = new JButton("Delete Profile");
         btDelProfile.setFont(mediumFont);
         GridBagConstraints gbc_btDelProfile = new GridBagConstraints();
         gbc_btDelProfile.anchor = GridBagConstraints.EAST;
@@ -271,7 +244,7 @@ public class Gui{
         gbc_lbGames.gridy = 3;
         containerGames.add(lbGames, gbc_lbGames);
 
-        final JScrollPane scGames = new GScrollPane();
+        final JScrollPane scGames = new JScrollPane();
         scGames.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         GridBagConstraints gbc_scGames = new GridBagConstraints();
         gbc_scGames.insets = new Insets(0, 0, 5, 0);
@@ -284,7 +257,7 @@ public class Gui{
         lsGames = new JList<>();
         scGames.setViewportView(lsGames);
 
-        btDelGames = new GButton("Remove Games");
+        btDelGames = new JButton("Remove Games");
         btDelGames.setFont(mediumFont);
         final GridBagConstraints gbc_btDelGames = new GridBagConstraints();
         gbc_btDelGames.anchor = GridBagConstraints.EAST;

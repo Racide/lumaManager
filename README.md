@@ -10,7 +10,7 @@
 
 ### Features:
 
-* resizable ui (small resolution friendly)
+* consistent and resizable ui (small resolutions friendly)
 * import original python manager profile files
 * automatic shortcut creation
 * powerful future-proof scraping with HTMLUnit headless browser
@@ -21,7 +21,6 @@
 
 ### Known issues
 
-* unsupported glyphs are not shown correctly. This is a shortcoming of Swing. Might me fixed by a modern LAF like flatlaf
 * considerable Jar size
 
 ### Improvements

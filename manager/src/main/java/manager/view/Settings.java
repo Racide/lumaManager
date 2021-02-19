@@ -1,6 +1,5 @@
 package manager.view;
 
-import manager.view.components.GButton;
 import org.tinylog.Logger;
 import org.tinylog.Supplier;
 
@@ -80,7 +79,7 @@ public class Settings{
         gbc_tfOutputPath.gridy = 1;
         contentPane.add(tfOutputPath, gbc_tfOutputPath);
 
-        btBrowse = new GButton("...");
+        btBrowse = new JButton("...");
         btBrowse.setFont(mediumFont);
         GridBagConstraints gbc_btBrowse = new GridBagConstraints();
         gbc_btBrowse.insets = new Insets(0, 0, 20, 0);
@@ -99,7 +98,7 @@ public class Settings{
         gbc_lbUtils.gridy = 2;
         contentPane.add(lbUtils, gbc_lbUtils);
 
-        btShortcut = new GButton("Create a shortcut");
+        btShortcut = new JButton("Create a shortcut");
         btShortcut.setFont(mediumFont);
         final GridBagConstraints gbc_btShortcut = new GridBagConstraints();
         gbc_btShortcut.insets = new Insets(0, 0, 10, 0);
@@ -109,12 +108,12 @@ public class Settings{
         gbc_btShortcut.gridy = 3;
         contentPane.add(btShortcut, gbc_btShortcut);
 
-        btImport = new GButton("Import a GLR Manager profile");
+        btImport = new JButton("Import a GLR Manager profile");
         btImport.setFont(mediumFont);
         final GridBagConstraints gbc_btImport = new GridBagConstraints();
         gbc_btImport.fill = GridBagConstraints.BOTH;
         gbc_btImport.gridwidth = 2;
-        gbc_btImport.insets = new Insets(0, 0, 5, 0);
+        gbc_btImport.insets = new Insets(0, 0, 0, 0);
         gbc_btImport.gridx = 0;
         gbc_btImport.gridy = 4;
         contentPane.add(btImport, gbc_btImport);

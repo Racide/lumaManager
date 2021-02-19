@@ -16,13 +16,14 @@ dependencies{
     implementation("com.github.vatbub:mslinks:1.0.5")
     implementation("org.tinylog:tinylog-impl:2.2.1")
     compileOnly("org.tinylog:tinylog-api:2.2.1")
+    implementation("com.formdev:flatlaf:1.0")
 }
 
 application{
     setMainClassName("manager.Main")
 }
 
-version "v1.2.1"
+version "v1.3.0"
 
 tasks.withType(AbstractArchiveTask){
     preserveFileTimestamps = false
@@ -35,5 +36,6 @@ shadowJar{
     minimize{
         exclude(dependency("org.tinylog:tinylog-impl:.*"))
         exclude(dependency("net.sourceforge.htmlunit:htmlunit:.*")) // needs investigation
+        exclude(dependency("com.formdev:flatlaf:1.0"))
     }
 }
