@@ -3,7 +3,6 @@ package manager.model;
 import com.squareup.moshi.FromJson;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.ToJson;
-import org.tinylog.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,11 +12,12 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 public interface Globals{
-    String version = "v1.3.2";
+    String version = "v1.4.0";
     String lumaDirName = "AppList";
     File dataFile = new File("data.json");
     int maxSteamApps = 140;
-    String gitHubUrl = "https://api.github.com/repos/Racide/lumaManager/releases";
+    String gitHubLatestRelease = "https://github.com/Racide/lumaManager/releases/latest";
+    String gitHubApiReleases = "https://api.github.com/repos/Racide/lumaManager/releases";
     Moshi moshi = new Moshi.Builder().add(new Globals.FileAdapter())
                                      .add(new Profiles.ProfilesAdapter())
                                      .add(new Profiles.Profile.ProfileAdapter())
@@ -29,16 +29,9 @@ public interface Globals{
      *
      * @param source the source
      * @param dest   the destination
-     * @return True if succeeded , False if not
      */
-    static boolean copyResource(InputStream source, File dest){
-        try{
-            Files.copy(source, Paths.get(dest.getAbsolutePath()), StandardCopyOption.REPLACE_EXISTING);
-        }catch(IOException ex){
-            Logger.error(ex, "failed to write icon to {}", dest.getAbsolutePath());
-            return false;
-        }
-        return true;
+    static void copyResource(InputStream source, File dest) throws IOException{
+        Files.copy(source, Paths.get(dest.getAbsolutePath()), StandardCopyOption.REPLACE_EXISTING);
     }
 
     class FileAdapter{

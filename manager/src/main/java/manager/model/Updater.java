@@ -25,7 +25,7 @@ public class Updater{
 
     public static Optional<String> checkUpdates(){
         final List<Release> releases;
-        Request request = new Request.Builder().url(Globals.gitHubUrl)
+        Request request = new Request.Builder().url(Globals.gitHubApiReleases)
                                                .addHeader("Accept", "application/vnd.github.v3+json")
                                                .build();
 

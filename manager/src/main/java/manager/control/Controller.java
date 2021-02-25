@@ -17,8 +17,11 @@ import okio.BufferedSink;
 import okio.Okio;
 import org.tinylog.Logger;
 
+import javax.swing.JOptionPane;
+import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Objects;
@@ -85,8 +88,21 @@ public final class Controller implements Gui.Listener, Settings.Listener{
 
     private void checkUpdates(){
         CompletableFuture.runAsync(() -> Updater.checkUpdates().ifPresent((newVersion) -> {
-            if(gui.showOldVersion(newVersion, !newVersion.equals(data.getIgnoreVersion()))){
-                data.setIgnoreVersion(newVersion);
+            switch(gui.updateAvailable(newVersion, !newVersion.equals(data.getIgnoreVersion()))){
+                case JOptionPane.YES_OPTION:
+                    if(Desktop.isDesktopSupported()){
+                        try{
+                            Desktop.getDesktop().browse(new URI(Globals.gitHubLatestRelease));
+                        }catch(IOException | URISyntaxException ex){
+                            Logger.error(ex, "failed to open hyperlink");
+                        }
+                    }else{
+                        Logger.error("unsupported Desktop class");
+                    }
+                    break;
+                case JOptionPane.NO_OPTION:
+                    data.setIgnoreVersion(newVersion);
+                    break;
             }
         }));
     }
@@ -148,12 +164,16 @@ public final class Controller implements Gui.Listener, Settings.Listener{
     public void createShortcut(Settings.Controller settings){
         final File workingDir = new File(".");
         final File logo = new File("logo.ico");
-        if(!logo.exists() && !Globals.copyResource(Controller.class.getResourceAsStream("/logo.ico"), logo)){
-            Logger.error("failed to copy icon to {}", logo.getAbsolutePath());
-            gui.writeError(logo);
-            return;
-        }
         gui.fileSave(new File("GreenLuma Manager.lnk")).ifPresent((shortcut) -> {
+            if(!logo.exists()){
+                try{
+                    Globals.copyResource(Controller.class.getResourceAsStream("/logo.ico"), logo);
+                }catch(IOException ex){
+                    Logger.error("failed to copy icon to {}", logo.getAbsolutePath());
+                    gui.writeError(logo);
+                    return;
+                }
+            }
             try{
                 final File jar = new File(Controller.class.getProtectionDomain().getCodeSource().getLocation().toURI());
                 final ShellLink sl = ShellLink.createLink(jar.getAbsolutePath())

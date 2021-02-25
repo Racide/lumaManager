@@ -5,6 +5,7 @@ import manager.model.Profiles;
 import manager.model.SearchResults;
 import manager.model.SteamApp;
 import manager.view.components.GTable;
+import manager.view.components.MousePressed;
 import manager.view.components.WindowClosing;
 import org.jetbrains.annotations.Nullable;
 import org.tinylog.Logger;
@@ -23,8 +24,11 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.Insets;
+import java.awt.Toolkit;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.Arrays;
@@ -266,7 +270,7 @@ public class Gui{
         containerGames.add(btDelGames, gbc_btDelGames);
     }
 
-    public class Controller implements ActionListener, WindowClosing, ListDataListener{
+    public class Controller implements ActionListener, WindowClosing, ListDataListener, MousePressed{
         private final Listener listener;
 
         public Controller(Listener listener){
@@ -288,6 +292,7 @@ public class Gui{
                 btDelProfile.addActionListener(this);
                 btSettings.addActionListener(this);
                 btGenerate.addActionListener(this);
+                tbResults.addMouseListener(this);
 
                 frame.pack();
                 frame.setLocationRelativeTo(null);
@@ -313,20 +318,20 @@ public class Gui{
             });
         }
 
-        public boolean showOldVersion(String newVersion, boolean warn){
+        public int updateAvailable(String newVersion, boolean warn){
             SwingUtilities.invokeLater(() -> lbVersion.setText(lbVersion.getText() + "(OLD)"));
             if(warn){
-                String[] options = new String[]{"Ok", "Don't ask again for this version"};
+                String[] options = new String[]{"Open webpage", "Don't ask again for this version", "Cancel"};
                 return JOptionPane.showOptionDialog(frame,
                         "A new version is available on GitHub (" + newVersion + ")",
-                        "Update available",
-                        JOptionPane.YES_NO_OPTION,
+                        "New version available",
+                        JOptionPane.YES_NO_CANCEL_OPTION,
                         JOptionPane.INFORMATION_MESSAGE,
                         null,
                         options,
-                        options[0]) == JOptionPane.NO_OPTION;
+                        options[0]);
             }else{
-                return false;
+                return JOptionPane.CLOSED_OPTION;
             }
         }
 
@@ -480,7 +485,7 @@ public class Gui{
 
         @Override
         public void actionPerformed(ActionEvent e){
-            JComponent s = (JComponent) e.getSource();
+            final JComponent s = (JComponent) e.getSource();
             if(s == tfSearch || s == btQuery){
                 String query = tfSearch.getText();
                 if(query.length() >= 1){
@@ -518,6 +523,22 @@ public class Gui{
             System.exit(0);
         }
 
+        @Override
+        public void mousePressed(MouseEvent e){
+            final JComponent s = (JComponent) e.getSource();
+            if(s == tbResults){
+                if(SwingUtilities.isRightMouseButton(e)){
+                    int row = tbResults.rowAtPoint(e.getPoint());
+                    int col = tbResults.columnAtPoint(e.getPoint());
+                    if(row >= 0 && col >= 0){
+                        row = tbResults.convertRowIndexToModel(row);
+                        col = tbResults.convertColumnIndexToModel(col);
+                        addToClipboard(tbResults.getModel().getValueAt(row, col).toString());
+                    }
+                }
+            }
+        }
+
         private void loading(boolean loading){
             if(loading){
                 ((CardLayout) containerQuery.getLayout()).show(containerQuery, "pbQuery");
@@ -545,6 +566,16 @@ public class Gui{
         private void searchResultsStatus(SearchResults.Status status){
             tfSearch.putClientProperty("JComponent.outline", status.value);
             tfSearch.repaint(); // makes outline immediately visible
+        }
+
+        private boolean addToClipboard(String text){
+            try{
+                Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(text), null);
+                return true;
+            }catch(IllegalStateException ex){
+                Logger.warn(ex, "failed to set clipboard contents");
+                return false;
+            }
         }
     }
 
