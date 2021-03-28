@@ -278,7 +278,6 @@ public class Gui{
         }
 
         public void initialize(){
-            setSearchResults(new SearchResults(SearchResults.Status.OK));
             SwingUtilities.invokeLater(() -> {
                 lbVersion.setText(Globals.version);
 
@@ -296,6 +295,9 @@ public class Gui{
 
                 frame.pack();
                 frame.setLocationRelativeTo(null);
+            });
+            setSearchResults(new SearchResults(SearchResults.Status.OK));
+            SwingUtilities.invokeLater(() -> {
                 loading(true);
                 frame.setVisible(true);
             });
@@ -315,6 +317,7 @@ public class Gui{
                     profiles.addListDataListener(this);
                 }
                 cbProfiles.setSelectedItem(lastProfile);
+                showProfile();
             });
         }
 
@@ -443,7 +446,7 @@ public class Gui{
                     JOptionPane.ERROR_MESSAGE);
         }
 
-        private Optional<String> showNewProfile(){
+        private Optional<String> newProfile(){
             String s = (String) JOptionPane.showInputDialog(frame,
                     "Profile name:",
                     "New profile",
@@ -493,18 +496,21 @@ public class Gui{
                     listener.search(tfSearch.getText());
                 }
             }else if(s == cbProfiles){
-                setProfile((Profiles.Profile) cbProfiles.getSelectedItem());
+                showProfile();
+                suggestGeneration();
             }else if(s == btAddGames){
                 listener.addGames((Profiles.Profile) cbProfiles.getSelectedItem(),
                         (SearchResults) tbResults.getModel(),
                         Arrays.stream(tbResults.getSelectedRows())
                               .map(tbResults.getRowSorter()::convertRowIndexToModel)
                               .toArray());
+                suggestGeneration();
             }else if(s == btDelGames){
                 listener.delGames((Profiles.Profile) cbProfiles.getSelectedItem(),
                         Arrays.stream(lsGames.getSelectedIndices()).map(i -> ~i).sorted().map(i -> ~i).toArray());
+                suggestGeneration();
             }else if(s == btAddProfile){
-                showNewProfile().ifPresent(listener::addProfile);
+                newProfile().ifPresent(listener::addProfile);
             }else if(s == btDelProfile){
                 listener.delProfile(cbProfiles.getSelectedIndex());
             }else if(s == btSettings){
@@ -513,6 +519,7 @@ public class Gui{
                 loading(true);
                 listener.generate((Profiles.Profile) cbProfiles.getSelectedItem()); // IO short enough for EDT
                 loading(false);
+                unsuggestGeneration();
             }
         }
 
@@ -543,12 +550,17 @@ public class Gui{
             if(loading){
                 ((CardLayout) containerQuery.getLayout()).show(containerQuery, "pbQuery");
                 tfSearch.removeActionListener(this);
+                cbProfiles.removeActionListener(this);
             }else{
                 ((CardLayout) containerQuery.getLayout()).show(containerQuery, "btQuery");
                 if(Arrays.stream(tfSearch.getActionListeners()).noneMatch(listener -> listener == this)){
                     tfSearch.addActionListener(this);
                 }
+                if(Arrays.stream(cbProfiles.getActionListeners()).noneMatch(listener -> listener == this)){
+                    cbProfiles.addActionListener(this);
+                }
             }
+            cbProfiles.setEnabled(!loading);
             btSettings.setEnabled(!loading);
             btGenerate.setEnabled(!loading);
             btQuery.setEnabled(!loading);
@@ -559,13 +571,23 @@ public class Gui{
             frame.requestFocusInWindow();
         }
 
-        private void setProfile(Profiles.Profile profile){
-            lsGames.setModel(profile);
+        private void showProfile(){
+            lsGames.setModel((Profiles.Profile) cbProfiles.getSelectedItem());
         }
 
         private void searchResultsStatus(SearchResults.Status status){
             tfSearch.putClientProperty("JComponent.outline", status.value);
             tfSearch.repaint(); // makes outline immediately visible
+        }
+
+        private void suggestGeneration(){
+            btGenerate.putClientProperty("JComponent.outline", "warning");
+            btGenerate.repaint(); // makes outline immediately visible
+        }
+
+        private void unsuggestGeneration(){
+            btGenerate.putClientProperty("JComponent.outline", null);
+            btGenerate.repaint(); // makes outline immediately visible
         }
 
         private boolean addToClipboard(String text){
