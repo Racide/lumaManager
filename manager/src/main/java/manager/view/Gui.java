@@ -124,7 +124,7 @@ public class Gui{
         frame.getContentPane().add(splitPane, BorderLayout.CENTER);
 
         final JPanel containerSearch = new JPanel();
-        containerSearch.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 5));
+        containerSearch.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
         containerSearch.setPreferredSize(new Dimension(600, 500));
         splitPane.setLeftComponent(containerSearch);
         final GridBagLayout gbl_containerSearch = new GridBagLayout();

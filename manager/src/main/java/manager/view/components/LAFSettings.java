@@ -21,5 +21,6 @@ public class LAFSettings{
         UIManager.put("ScrollBar.showButtons", true);
         UIManager.put("ScrollBar.width", 16);
         UIManager.put("ProgressBar.cycleTime", 1000);
+        UIManager.put("TitlePane.unifiedBackground", true);
     }
 }

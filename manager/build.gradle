@@ -16,7 +16,7 @@ dependencies{
     implementation("com.github.vatbub:mslinks:1.0.5")
     implementation("org.tinylog:tinylog-impl:2.2.1")
     compileOnly("org.tinylog:tinylog-api:2.2.1")
-    implementation("com.formdev:flatlaf:1.0")
+    implementation("com.formdev:flatlaf:1.1.1")
 }
 
 application{
