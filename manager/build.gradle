@@ -36,6 +36,6 @@ shadowJar{
     minimize{
         exclude(dependency("org.tinylog:tinylog-impl:.*"))
         exclude(dependency("net.sourceforge.htmlunit:htmlunit:.*")) // needs investigation
-        exclude(dependency("com.formdev:flatlaf:1.0"))
+        exclude(dependency("com.formdev:flatlaf"))
     }
 }
