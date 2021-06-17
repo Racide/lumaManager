@@ -56,13 +56,7 @@ public class Crawler{
                     Logger.warn("result table has unexpected amount of columns");
                     break;
                 }
-                DomNode titleNode = cols.get(2).getFirstChild();
-                if(titleNode == null){
-                    status = SearchResults.Status.WARN;
-                    Logger.warn("unexpected title html layout");
-                    break;
-                }
-                if(!append(steamApps, cols.get(0).asText(), titleNode.asText(), cols.get(1).asText())){
+                if(!append(steamApps, cols.get(0).asNormalizedText().trim(), cols.get(2).asNormalizedText().trim(), cols.get(1).asNormalizedText().trim())){
                     status = SearchResults.Status.WARN;
                 }
             }
