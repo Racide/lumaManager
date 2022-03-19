@@ -17,11 +17,11 @@ export default defineConfig(({ mode }) => {
           }),
           ...preprocessOptions
         ],
-      })/* ,
+      }),
       {
         ...optimizeCss(),
         apply: 'build'
-      } */
+      }
     ]
   }
 })

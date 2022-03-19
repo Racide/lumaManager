@@ -9,17 +9,14 @@
     HeaderUtilities,
     HeaderGlobalAction,
     Content,
-    Grid,
-    Row,
-    Column,
   } from "carbon-components-svelte";
-  import { Close16, Subtract16, Maximize16 } from "carbon-icons-svelte";
+  import {
+    Close16 as Close,
+    Subtract16 as Subtract,
+    Maximize16 as Maximize,
+  } from "carbon-icons-svelte";
   import Search from "./lib/Search.svelte";
-
-  export let theme: string;
-  $: document.documentElement.setAttribute("theme", theme);
-
-  export let name: string;
+  import Local from "./lib/Local.svelte";
 
   onMount(() => {
     document
@@ -46,43 +43,32 @@
     </HeaderNavMenu>
   </HeaderNav>
   <HeaderUtilities>
+    <HeaderGlobalAction icon={Subtract} on:click={() => appWindow.minimize()} />
     <HeaderGlobalAction
-      icon={Subtract16}
-      on:click={() => {
-        appWindow.minimize();
-      }}
+      icon={Maximize}
+      on:click={() => appWindow.toggleMaximize()}
     />
-    <HeaderGlobalAction
-      icon={Maximize16}
-      on:click={() => {
-        appWindow.toggleMaximize();
-      }}
-    />
-    <HeaderGlobalAction
-      icon={Close16}
-      on:click={() => {
-        appWindow.close();
-      }}
-    />
+    <HeaderGlobalAction icon={Close} on:click={() => appWindow.close()} />
   </HeaderUtilities>
 </Header>
 
 <Content>
-  <Grid>
-    <Row>
-      <Column sm={11} md={11} lg={11}>
-        <Search />
-      </Column>
-      <Column sm={1} md={1} lg={1}>
-        Hello {name}!
-      </Column>
-    </Row>
-  </Grid>
+  <Search />
+  <Local />
 </Content>
 
 <style lang="scss">
   .icon {
     width: 18px;
     margin-right: 5px;
+  }
+
+  :global(#main-content) {
+    display: grid;
+    grid-template-columns:
+      minmax(min-content, auto)
+      minmax(min-content, Max(400px, max-content));
+    align-items: stretch;
+    column-gap: 1em;
   }
 </style>
