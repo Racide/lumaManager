@@ -50,5 +50,22 @@ html {
 .#{$prefix}--data-table--sticky-header {
   flex-grow: 1;
   flex-basis: 0;
-  max-height: unset;
+  max-height: inherit;
+}
+
+// batch
+.#{$prefix}--batch-actions {
+  flex-grow: 1;
+}
+
+.#{$prefix}--batch-actions--active {
+  position: inherit;
+
+  &~.#{$prefix}--toolbar-content {
+    position: absolute;
+  }
+}
+
+.#{$prefix}--batch-summary {
+  min-width: 100px;
 }

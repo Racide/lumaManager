@@ -23,7 +23,7 @@
         }
     }
 
-    ::-webkit-scrollbar-button {
+    ::-webkit-scrollbar-button:vertical {
         background-position: center;
         background-repeat: no-repeat;
         background-color: $ui-01;
@@ -32,11 +32,11 @@
             background-color: $hover-light-ui;
         }
 
-        &:vertical:decrement {
+        &:decrement {
             background-image: url("data:image/svg+xml,%3Csvg width='12px' height='7px' viewBox='0 0 12 7' version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'%3E%3Cg id='chevron--up' stroke='none' stroke-width='1' fill='none' fill-rule='evenodd'%3E%3Cpolygon id='chevron' fill='#{u.encodecolor($icon-02)}' fill-rule='nonzero' points='5.99408113 1.44972267 0.726461685 6.99971556 -5.79924997e-13 6.31479463 5.99350948 2.93098879e-14 11.996192 6.31451019 11.2702706 7'%3E%3C/polygon%3E%3C/g%3E%3C/svg%3E");
         }
 
-        &:vertical:increment {
+        &:increment {
             background-image: url("data:image/svg+xml,%3Csvg width='12px' height='7px' viewBox='0 0 12 7' version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'%3E%3Cg id='chevron--down' stroke='none' stroke-width='1' fill='none' fill-rule='evenodd'%3E%3Cpolygon id='chevron' fill='#{u.encodecolor($icon-02)}' fill-rule='nonzero' transform='translate(5.998096, 3.500000) rotate(180.000000) translate(-5.998096, -3.500000) ' points='5.99408113 1.44972267 0.726461685 6.99971556 -5.79924997e-13 6.31479463 5.99350948 -2.74780199e-14 11.996192 6.31451019 11.2702706 7'%3E%3C/polygon%3E%3C/g%3E%3C/svg%3E");
         }
     }

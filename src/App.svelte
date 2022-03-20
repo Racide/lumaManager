@@ -16,7 +16,7 @@
     Maximize16 as Maximize,
   } from "carbon-icons-svelte";
   import Search from "./lib/Search.svelte";
-  import Local from "./lib/Local.svelte";
+  import Games from "./lib/Games.svelte";
 
   onMount(() => {
     document
@@ -53,8 +53,12 @@
 </Header>
 
 <Content>
+  <!-- <div class="container search"> -->
   <Search />
-  <Local />
+  <!-- </div> -->
+  <!-- <div class="container games"> -->
+  <Games />
+  <!-- </div> -->
 </Content>
 
 <style lang="scss">
@@ -67,8 +71,16 @@
     display: grid;
     grid-template-columns:
       minmax(min-content, auto)
-      minmax(min-content, Max(400px, max-content));
+      minmax(min-content, max-content);
     align-items: stretch;
     column-gap: 1em;
+  }
+
+  :global(.bx--data-table-container:nth-child(1)) {
+    // background: aqua !important;
+  }
+
+  :global(.bx--data-table-container:nth-child(2)) {
+    width: fit-content;
   }
 </style>
