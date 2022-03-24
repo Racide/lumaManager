@@ -1,5 +1,5 @@
 import sveltePreprocess from "svelte-preprocess";
-import sass from "sass-embedded";
+// import sass from "sass-embedded";
 import { optimizeImports/* , optimizeCss */ } from "carbon-preprocess-svelte";
 
 export const options = {
@@ -17,7 +17,7 @@ export const sveltePreprocessOptions = {
   sourceMap: true, // overridden
   scss: {
     renderSync: true,
-    implementation: sass
+    // implementation: sass
   }
 };
 

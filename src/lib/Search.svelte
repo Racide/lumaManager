@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     import {
         DataTable,
         Toolbar,
@@ -94,10 +94,7 @@
             <ToolbarSearch persistent />
             <ToolbarMenu icon={Filter}>
                 <ToolbarMenuItem primaryFocus>Restart all</ToolbarMenuItem>
-                <ToolbarMenuItem
-                    href="https://cloud.ibm.com/docs/loadbalancer-service"
-                    >API documentation</ToolbarMenuItem
-                >
+                <ToolbarMenuItem href="">API documentation</ToolbarMenuItem>
                 <ToolbarMenuItem danger>Stop all</ToolbarMenuItem>
             </ToolbarMenu>
         </ToolbarContent>
