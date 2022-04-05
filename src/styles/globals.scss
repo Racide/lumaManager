@@ -1,0 +1,20 @@
+.close:hover {
+  background-color: #b81921;
+}
+
+.bx--content {
+  display: grid;
+  grid-template-columns:
+    minmax(min-content, auto) minmax(min-content, max-content);
+  grid-template-rows: auto 1fr;
+  align-items: stretch;
+  column-gap: 1em;
+}
+
+.search {
+  grid-row: span 2;
+}
+
+.games {
+  grid-column-start: 2;
+}

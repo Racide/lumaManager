@@ -50,7 +50,12 @@
       "active": false
     },
     "allowlist": {
-      "all": true
+      "all": true,
+      "http": {
+        "scope": [
+          "http://store.steampowered.com/api/*"
+        ]
+      }
     },
     "windows": [
       {

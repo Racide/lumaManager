@@ -14,7 +14,7 @@ $carbon--theme: $carbon--theme--g90;
 
 @import "scrollbars";
 
-html {
+:root {
   overflow: hidden;
 }
 
@@ -72,6 +72,11 @@ html {
 }
 
 // fix
-.bx--toolbar-content {
+.#{$prefix}--toolbar-content {
   z-index: 1;
+}
+
+// skeleton background fix
+.#{$prefix}--skeleton.#{$prefix}--data-table {
+  background-color: $ui-02;
 }

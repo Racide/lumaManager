@@ -1,4 +1,5 @@
 <script lang="ts">
+  import "./styles/globals.scss";
   import { appWindow } from "@tauri-apps/api/window";
   import { onMount } from "svelte";
   import {
@@ -14,19 +15,21 @@
     Close16 as Close,
     Subtract16 as Subtract,
     Maximize16 as Maximize,
+    Minimize16 as Minimize,
   } from "carbon-icons-svelte";
   import Search from "./lib/Search.svelte";
   import Games from "./lib/Games.svelte";
   import Profiles from "./lib/Profiles.svelte";
 
   let windowMaximized: boolean;
+  let sizeIcon = Maximize;
 
   onMount(() => {
-    appWindow.listen("tauri://resize", () => {
-      let t = appWindow.isMaximized();
+    appWindow.listen("tauri://resize", async () => {
+      let t = await appWindow.isMaximized();
       if (windowMaximized != t) {
         windowMaximized = t;
-        console.log("change");
+        sizeIcon = windowMaximized ? Minimize : Maximize;
       }
     });
     document
@@ -36,32 +39,37 @@
       .forEach((el) => el.setAttribute("data-tauri-drag-region", ""));
   });
 
-  // function shouldFilterItem(item, value) {
-  //   if (!value) return true;
-  //   return item.text.toLowerCase().includes(value.toLowerCase());
-  // }
+  document.addEventListener("contextmenu", (event) => event.preventDefault());
 </script>
 
 <Header>
   <svelte:fragment slot="platform">
-    <img src="../src-tauri/icons/32x32.png" alt="logo" class="icon" />
+    <img
+      src="../src-tauri/icons/32x32.png"
+      alt="logo"
+      style:width="18px"
+      style:margin-right="5px"
+    />
     GreenLuma Manager
   </svelte:fragment>
   <HeaderNav>
-    <HeaderNavItem text="Link 1" />
-    <HeaderNavMenu text="Menu">
-      <HeaderNavItem text="Link 1" />
-      <HeaderNavItem text="Link 2" />
-      <HeaderNavItem text="Link 3" />
+    <HeaderNavMenu text="File">
+      <HeaderNavItem text="Settings" />
+      <HeaderNavItem text="About" />
+      <HeaderNavItem text="Exit" />
     </HeaderNavMenu>
   </HeaderNav>
   <HeaderUtilities>
     <HeaderGlobalAction icon={Subtract} on:click={() => appWindow.minimize()} />
     <HeaderGlobalAction
-      icon={Maximize}
+      icon={sizeIcon}
       on:click={() => appWindow.toggleMaximize()}
     />
-    <HeaderGlobalAction icon={Close} on:click={() => appWindow.close()} />
+    <HeaderGlobalAction
+      icon={Close}
+      class="close"
+      on:click={() => appWindow.close()}
+    />
   </HeaderUtilities>
 </Header>
 
@@ -72,32 +80,4 @@
 </Content>
 
 <style lang="scss">
-  .icon {
-    width: 18px;
-    margin-right: 5px;
-  }
-
-  :global(.bx--content) {
-    display: grid;
-    grid-template-columns:
-      minmax(min-content, auto)
-      minmax(min-content, max-content);
-    grid-template-rows: min-content;
-    align-items: stretch;
-    column-gap: 1em;
-  }
-
-  :global(.bx--data-table-container:nth-child(1)) {
-    // background: aqua !important;
-    grid-row: span 2;
-  }
-
-  :global(.bx--data-table-container:nth-child(2)) {
-    // background: aqua !important;
-    min-width: max-content;
-  }
-
-  :global(.bx--data-table-container:nth-child(3)) {
-    grid-column-start: 2;
-  }
 </style>
