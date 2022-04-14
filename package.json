@@ -21,6 +21,7 @@
     "carbon-icons-svelte": "^10.45.1",
     "carbon-preprocess-svelte": "^0.x.x",
     "fuse.js": "^6.5.3",
+    "idb": "^7.0.1",
     "sass": "^1.49.9",
     "sass-embedded": "^1.49.9",
     "svelte": "^3.46.4",

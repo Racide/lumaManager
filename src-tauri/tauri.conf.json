@@ -53,7 +53,8 @@
       "all": true,
       "http": {
         "scope": [
-          "http://store.steampowered.com/api/*"
+          "http://store.steampowered.com/api/*",
+          "https://api.steampowered.com/*"
         ]
       }
     },

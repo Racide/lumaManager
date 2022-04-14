@@ -1,72 +1,62 @@
-import { Profile, Profiles, type SteamApp, type SteamData } from "./types";
+import { Profile, type Profiles, SteamApp, type JSONSteamAppInfo, type ReadonlySteamApps, type LumaManagerDB, type JSONSteamApps, newSteamApps, type DBProfile, newProfiles, DB_VERSION, steamAppsUrl } from "./types";
+import * as http from "@tauri-apps/api/http";
+import { openDB, type IDBPDatabase } from "idb";
 
-type JSONSteamData = {
-    readonly applist: {
-        readonly apps: {
-            readonly appid: number;
-            readonly name: string;
-        }[];
-    };
-};
-type JSONProfiles = Record<string, { readonly steamApps: JSONSteamId[]; }>;
-type JSONSteamId = number;
+let db: IDBPDatabase<LumaManagerDB>;
+export let steamApps: ReadonlySteamApps;
+export let profiles: Profiles;
+export let profile: Profile;
 
-function newSteamData(jsonSteamData: JSONSteamData): SteamData {
-    const steamData = new Array() as Array<SteamApp> & SteamData,
-        index = new Map<number, SteamApp>();
-    steamData.get = (id) => {
-        return index.get(id);
-    };
-    steamData.has = (id) => {
-        return index.has(id);
-    };
-    jsonSteamData.applist.apps.forEach((jsonSteamApp) => {
-        const steamApp: SteamApp = {
-            id: jsonSteamApp.appid,
-            title: jsonSteamApp.name,
-        };
-        index.set(steamApp.id, steamApp);
-        steamData.push(steamApp);
-    });
-    return steamData;
+async function syncSteamApps() {
+  const response = await http.fetch<JSONSteamApps>(
+    steamAppsUrl
+  );
+  if (!response) {
+    throw Error("todo error");
+  }
+  steamApps = newSteamApps(response.data);
+  const tx = db.transaction("steamApps", "readwrite");
+  await Promise.all(
+    [
+      ...steamApps.map((steamApp) => tx.store.add(steamApp)),
+      tx.done
+    ]
+  );
 }
 
-// Mockups
-const jsonSteamData: JSONSteamData = await fetch("/assets/steamapps.json")
-    .then((response) => response.json()).catch(() => {
-        console.log("fuck");
-    });
-
-export const steamData: SteamData = newSteamData(jsonSteamData);
-
-// Mockups
-const dProfiles: JSONProfiles = {
-    "bob games": {
-        steamApps: (() => {
-            const p = Math.floor(Math.random() * steamData.length),
-                q = Math.floor(Math.random() * 100);
-            return steamData.slice(p, Math.min(p + q, steamData.length)).map(e => e.id);
-        })()
+export async function loadData() {
+  db = await openDB<LumaManagerDB>("SteamApps", 1, {
+    async upgrade(db, oldVersion, _, tx) {
+      switch (oldVersion) {
+        case 0:
+          // transaction 1
+          db.createObjectStore("steamApps", {
+            keyPath: 'id',
+          });
+          db.createObjectStore("profiles", {
+            keyPath: "id",
+          });
+          db.createObjectStore("activeProfile");
+          await tx.done;
+          // transaction 2
+          await db.add("profiles", new Profile("default"));
+          await db.put("activeProfile", "deault", "activeProfile");
+          console.log("upgrade done");
+      }
     },
-    "fish games": {
-        steamApps: (() => {
-            const p = Math.floor(Math.random() * steamData.length),
-                q = Math.floor(Math.random() * 100);
-            return steamData.slice(p, Math.min(p + q, steamData.length)).map(e => e.id);
-        })()
-    },
-    "empty": {
-        steamApps: []
+  });
+  console.log("loading steamApps");
+  let error = null;
+  try {
+    await syncSteamApps();
+  } catch (ex) {
+    console.log(ex);
+    if (await db.count("steamApps") == 0) {
+      error = Error("todo fatal, no steamapps", { cause: ex });
+    } else {
+      error = Error("todo offline", { cause: ex });
     }
-};
-const dProfile = Object.keys(dProfiles)[0];
-
-export const profiles = ((jsonProfiles: JSONProfiles) => Object.keys(jsonProfiles).reduce((acc, key) => {
-    acc.push(new Profile(
-        key,
-        jsonProfiles[key].steamApps.sort().map((steamId) => steamData.get(steamId)!)
-    ));
-    return acc;
-}, new Profiles()))(dProfiles);
-
-export let profile: Profile = profiles.get(dProfile)!;
+  }
+  profiles = newProfiles(await db.getAll("profiles"), steamApps);
+  profile = profiles.get((await db.get("activeProfile", "activeProfile"))!)!;
+}

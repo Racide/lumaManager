@@ -10,13 +10,14 @@
         ToolbarMenu,
         ToolbarMenuItem,
         SkeletonText,
+        InlineLoading,
     } from "carbon-components-svelte";
     import { Filter16 as Filter, AddAlt16 as Add } from "carbon-icons-svelte";
     import * as http from "@tauri-apps/api/http";
     import Fuse from "fuse.js";
     import { afterUpdate } from "svelte";
-    import { steamData } from "./loadData";
-    import type { JSONSteamApp, SteamApp } from "./types";
+    import { steamApps } from "./loadData";
+    import type { JSONSteamAppInfo, SteamApp } from "./types";
     import { profile } from "./stores";
 
     const options: Fuse.IFuseOptions<SteamApp> = {
@@ -36,7 +37,7 @@
         keys: ["title"],
     };
 
-    const fuse = new Fuse(steamData, options);
+    const fuse = new Fuse(steamApps, options);
 
     let container: HTMLElement,
         results: SteamApp[] = [],
@@ -79,12 +80,12 @@
     }
 
     async function fetchType(appId: number) {
-        const r = await http.fetch<JSONSteamApp>(
+        const response = await http.fetch<JSONSteamAppInfo>(
             `http://store.steampowered.com/api/appdetails?appids=${appId}`
         );
-        console.log(r.data);
-        const obj = r.data;
-        return obj[appId].data.type;
+        const type = response.data[appId].data.type;
+        steamApps.get(appId);
+        return type;
     }
 </script>
 
@@ -130,14 +131,14 @@
             <svelte:fragment slot="cell" let:row let:cell>
                 {#if cell.key == "type" && !cell.value}
                     {#await fetchType(row.id)}
-                        <!-- promise is pending -->
                         <SkeletonText width="5ch" />
                     {:then type}
-                        <!-- promise was fulfilled -->
                         {type}
                     {:catch error}
-                        <!-- promise was rejected -->
-                        <p>Something went wrong: {error.message}</p>
+                        <InlineLoading
+                            status="error"
+                            description="unavailable"
+                        />
                     {/await}
                 {:else}
                     {cell.value}

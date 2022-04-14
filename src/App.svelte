@@ -10,6 +10,7 @@
     HeaderUtilities,
     HeaderGlobalAction,
     Content,
+    SkeletonPlaceholder,
   } from "carbon-components-svelte";
   import {
     Close16 as Close,
@@ -20,9 +21,10 @@
   import Search from "./lib/Search.svelte";
   import Games from "./lib/Games.svelte";
   import Profiles from "./lib/Profiles.svelte";
+  import { loadData } from "./lib/loadData";
 
-  let windowMaximized: boolean;
-  let sizeIcon = Maximize;
+  let windowMaximized: boolean,
+    sizeIcon = Maximize;
 
   onMount(() => {
     appWindow.listen("tauri://resize", async () => {
@@ -31,6 +33,16 @@
         windowMaximized = t;
         sizeIcon = windowMaximized ? Minimize : Maximize;
       }
+    });
+    appWindow.listen("tauri://focus", () => {
+      document
+        .querySelector<HTMLElement>(".bx--header")
+        ?.classList.remove("window-blurred");
+    });
+    appWindow.listen("tauri://blur", () => {
+      document
+        .querySelector<HTMLElement>(".bx--header")
+        ?.classList.add("window-blurred");
     });
     document
       .querySelectorAll(
@@ -67,16 +79,22 @@
     />
     <HeaderGlobalAction
       icon={Close}
-      class="close"
+      class="window-close"
       on:click={() => appWindow.close()}
     />
   </HeaderUtilities>
 </Header>
 
 <Content>
-  <Search />
-  <Profiles />
-  <Games />
+  {#await loadData()}
+    <SkeletonPlaceholder />
+    <SkeletonPlaceholder />
+    <SkeletonPlaceholder />
+  {:then}
+    <Search />
+    <Profiles />
+    <Games />
+  {/await}
 </Content>
 
 <style lang="scss">

@@ -16,7 +16,7 @@
     "checkJs": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
-    "experimentalDecorators": true
+    "strict": true
   },
   "include": [
     "src/**/*.d.ts",

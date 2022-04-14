@@ -1,4 +1,8 @@
-.close:hover {
+.window-blurred {
+  filter: contrast(80%) brightness(80%);
+}
+
+.window-close:hover {
   background-color: #b81921;
 }
 
