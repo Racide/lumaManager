@@ -18,10 +18,10 @@
     Maximize16 as Maximize,
     Minimize16 as Minimize,
   } from "carbon-icons-svelte";
-  import Search from "./lib/Search.svelte";
-  import Games from "./lib/Games.svelte";
-  import Profiles from "./lib/Profiles.svelte";
   import { loadData } from "./lib/loadData";
+  import Search from "./lib/Search.svelte";
+  import Profiles from "./lib/Profiles.svelte";
+  import Games from "./lib/Games.svelte";
 
   let windowMaximized: boolean,
     sizeIcon = Maximize;

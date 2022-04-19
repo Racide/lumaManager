@@ -1,30 +1,116 @@
 import type { DBSchema } from "idb";
 
-export const DB_VERSION = 1;
+export const dBName = "lumaManager";
+export const dBVersion = 1;
 export const steamAppsUrl = "https://api.steampowered.com/ISteamApps/GetAppList/v2/";
+export const steamAppsDB = "steamApps";
+export const profilesDB = "profiles";
+export const profileDB = "profile";
+export const defaultProfileName = "default";
+
+interface Storable<StorageType> {
+    toStorage: () => Readonly<StorageType>;
+};
+
+type StorageType<Type> = Type extends Storable<infer StorageType> ? Readonly<StorageType> : never;
+
+type Storagify<Type> = {
+    readonly [Key in keyof Type as Type[Key] extends Function | Symbol ? never : Key]
+    : Type[Key] extends Storable<infer StorageType> ? StorageType : Storagify<Type[Key]>
+};
 
 export interface LumaManagerDB extends DBSchema {
     steamApps: {
-        key: number;
-        value: SteamApp;
+        key: StorageType<SteamApp>["id"];
+        value: StorageType<SteamApp>;
     };
     profiles: {
-        key: string,
-        value: DBProfile;
+        key: StorageType<Profile>["id"],
+        value: StorageType<Profile>;
     };
-    activeProfile: {
-        key: string,
-        value: string;
+    profile: {
+        key: StorageType<Profile>["id"],
+        value: StorageType<Profile>["id"];
     };
 }
 
-type DB<Type> = { readonly [Key in keyof Omit<Type, "toJSON"> as (Type[Key] extends Function | Symbol ? never : Key)]: DB<Type[Key]> };
+export class SteamApp implements Storable<{
+    id: SteamApp["id"],
+    title: SteamApp["title"],
+    type: SteamApp["type"];
+}> {
+    private type: SteamApp.Type | undefined;
 
-interface Serializable<Type> {
-    toJSON: () => DB<Type>;
+    constructor(
+        public readonly id: number,
+        public readonly title: string,
+        type?: SteamApp.Type) {
+        this.type = type;
+    }
+
+    toStorage() {
+        return {
+            id: this.id,
+            title: this.title,
+            type: this.type
+        };
+    }
+
+    getType() {
+        return this.type;
+    }
+
+    setType(type: SteamApp.Type) {
+        if (!this.type) {
+            this.type = type;
+        }
+    }
+
+}
+namespace SteamApp {
+    export type Type = string;//"APP" | "DLC";
+}
+
+interface SteamAppsExtra extends Storable<Array<StorageType<SteamApp>>> {
+    get: Map<SteamApp["id"], SteamApp>["get"];
+    has: Map<SteamApp["id"], SteamApp>["has"];
+    setType: (id: SteamApp["id"], type: SteamApp.Type) => void;
+    push: Array<SteamApp>["push"];
+    del: (...id: SteamApp["id"][]) => void;
+}
+export type SteamApps = Array<SteamApp> & SteamAppsExtra;
+export type ReadonlySteamApps = ReadonlyArray<SteamApp> & Pick<SteamAppsExtra, "get" | "has" | "setType">;
+
+export class Profile implements Storable<{
+    id: Profile["id"],
+    steamApps: StorageType<SteamApps>;
+}>{
+    readonly id: string;
+    readonly text: string;
+    steamApps: SteamApps;
+
+    constructor(id: Profile["id"], steamApps: SteamApps = newSteamApps()) {
+        id = id.trim();
+        this.id = id;
+        this.text = id;
+        this.steamApps = steamApps;
+    }
+
+    toStorage() {
+        return {
+            id: this.id,
+            steamApps: this.steamApps.toStorage()
+        };
+    }
 };
 
-export type DBProfile = Omit<DB<Profile>, "text">;
+interface ProfilesExtra extends Storable<Array<StorageType<Profile>>> {
+    get: Map<Profile["id"], Profile>["get"];
+    has: Map<Profile["id"], Profile>["has"];
+    push: Array<Profile>["push"];
+    del: (...ids: Profile["id"][]) => void;
+}
+export type Profiles = Array<Profile> & ProfilesExtra;
 
 export interface JSONSteamAppInfo {
     [key: number]: {
@@ -43,71 +129,6 @@ export type JSONSteamApps = {
         }[];
     };
 };
-
-export class SteamApp implements Serializable<SteamApp> {
-    private type: SteamApp.Type | undefined;
-
-    constructor(
-        public readonly id: number,
-        public readonly title: string,
-        type?: SteamApp.Type) {
-        this.type = type;
-    }
-    toJSON() {
-        return {
-            id: this.id,
-            title: this.title,
-        };
-    }
-
-    getType() {
-        return this.type;
-    }
-
-    setType(type: SteamApp.Type) {
-        if (!this.type) {
-            this.type = type;
-        }
-    }
-
-};
-
-namespace SteamApp {
-    export type Type = string;//"APP" | "DLC";
-}
-
-interface SteamAppsExtra {
-    get: Map<SteamApp["id"], SteamApp>["get"];
-    has: Map<SteamApp["id"], SteamApp>["has"];
-    setType: (id: SteamApp["id"], type: SteamApp.Type) => void;
-    push: Array<SteamApp>["push"];
-    del: (...id: SteamApp["id"][]) => void;
-}
-export type SteamApps = Array<SteamApp> & SteamAppsExtra;
-
-export type ReadonlySteamApps = ReadonlyArray<SteamApp> & Pick<SteamApps, "get" | "has" | "setType">;
-
-export class Profile {
-    readonly id: string;
-    readonly text: string;
-    steamApps: SteamApps;
-
-    constructor(id: Profile["id"], steamApps: SteamApps = newSteamApps()) {
-        id = id.trim();
-        this.id = id;
-        this.text = id;
-        this.steamApps = steamApps;
-    }
-};
-
-interface ProfilesExtra {
-    get: Map<Profile["id"], Profile>["get"];
-    has: Map<Profile["id"], Profile>["has"];
-    push: Array<Profile>["push"];
-    del: (...ids: Profile["id"][]) => void;
-    // toDBProfiles: () => DBProfiles;
-}
-export type Profiles = Array<Profile> & ProfilesExtra;
 
 // constructors
 
@@ -143,6 +164,9 @@ export function newSteamApps(jsonSteamApps?: JSONSteamApps) {
                     index.delete(id);
                 }
             },
+            toStorage() {
+                return array.map(steamApp => steamApp.toStorage());
+            }
         };
     if (jsonSteamApps) {
         jsonSteamApps.applist.apps.forEach((jsonSteamApp) => {
@@ -158,7 +182,7 @@ export function newSteamApps(jsonSteamApps?: JSONSteamApps) {
     return Object.assign(array, extra);
 }
 
-export function newProfiles(dbProfiles: DBProfile[], steamApps: ReadonlySteamApps) {
+export function newProfiles(dbProfiles: StorageType<Profiles>, steamApps: ReadonlySteamApps) {
     const array = new Array<Profile>(),
         index = new Map<Profile["id"], Profile>(),
         extra: ProfilesExtra = {
@@ -185,32 +209,23 @@ export function newProfiles(dbProfiles: DBProfile[], steamApps: ReadonlySteamApp
                     index.delete(id);
                 }
             },
-            // toDBProfiles() {
-            //     array
-            //     const dbProfiles: DBProfiles = {};
-            //     for (const profile of array) {
-            //         dbProfiles[profile.id] = { steamApps: profile.steamApps };
-            //     }
-            //     return dbProfiles;
-            // }
+            toStorage() {
+                return array.map((profile) => profile.toStorage());
+            }
         };
 
     for (const dbProfile of dbProfiles) {
-        array.push(new Profile(
+        const profile = new Profile(
             dbProfile.id,
             dbProfile.steamApps.reduce(
-                (acc, steamApp) => {
-                    if (!steamApp.getType()) {
-                        const type = steamApps.get(steamApp.id)?.getType();
-                        if (type) {
-                            steamApp.setType(type);
-                        }
-                    }
-                    acc.push(steamApp);
+                (acc, dbSteamApp) => {
+                    acc.push(new SteamApp(dbSteamApp.id, dbSteamApp.title, dbSteamApp.type));
                     return acc;
                 },
                 newSteamApps())
-        ));
+        );
+        index.set(profile.id, profile);
+        array.push(profile);
     }
 
     return Object.assign(array, extra);

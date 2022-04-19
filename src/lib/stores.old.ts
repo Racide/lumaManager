@@ -1,6 +1,6 @@
-import type { Profile, SteamApp } from "./types";
-import { writable } from 'svelte/store';
-import * as data from "./loadData";
+// import type { Profile, SteamApp } from "./types";
+// import { writable } from 'svelte/store';
+// import * as data from "./loadData";
 
 export const profiles = (() => {
     const { subscribe, update } = writable(data.profiles);

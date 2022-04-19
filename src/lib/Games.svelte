@@ -13,7 +13,7 @@
         TrashCan16 as TrashCan,
         Save16 as Save,
     } from "carbon-icons-svelte";
-    import { profile } from "./stores";
+    import { profile } from "./loadData";
 
     let selectedRowIds: number[] = [];
 </script>
@@ -33,11 +33,6 @@
             <Button icon={TrashCan}>Remove Games</Button>
         </ToolbarBatchActions>
         <ToolbarContent>
-            <ToolbarMenu icon={Filter}>
-                <ToolbarMenuItem>Games</ToolbarMenuItem>
-                <ToolbarMenuItem>DLC</ToolbarMenuItem>
-                <ToolbarMenuItem>Other</ToolbarMenuItem>
-            </ToolbarMenu>
             <Button icon={Save}>Generate</Button>
         </ToolbarContent>
     </Toolbar>

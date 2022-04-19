@@ -14,30 +14,10 @@
     } from "carbon-components-svelte";
     import { Filter16 as Filter, AddAlt16 as Add } from "carbon-icons-svelte";
     import * as http from "@tauri-apps/api/http";
-    import Fuse from "fuse.js";
     import { afterUpdate } from "svelte";
-    import { steamApps } from "./loadData";
+    import { fuse, steamApps } from "./loadData";
     import type { JSONSteamAppInfo, SteamApp } from "./types";
-    import { profile } from "./stores";
-
-    const options: Fuse.IFuseOptions<SteamApp> = {
-        isCaseSensitive: false,
-        // includeScore: false,
-        shouldSort: true,
-        // includeMatches: false,
-        // findAllMatches: false,
-        // minMatchCharLength: 1,
-        // location: 0,
-        // threshold: 0.6,
-        // distance: 100,
-        // useExtendedSearch: false,
-        // ignoreLocation: false,
-        // ignoreFieldNorm: false,
-        // fieldNormWeight: 1,
-        keys: ["title"],
-    };
-
-    const fuse = new Fuse(steamApps, options);
+    import { profile } from "./loadData";
 
     let container: HTMLElement,
         results: SteamApp[] = [],

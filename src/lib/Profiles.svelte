@@ -10,7 +10,7 @@
         Modal,
     } from "carbon-components-svelte";
     import { Add16 as Add, TrashCan16 as Delete } from "carbon-icons-svelte";
-    import { profile, profiles } from "./stores";
+    import { profile, profiles } from "./loadData";
     import { Profile } from "./types";
 
     let newProfileModal_open = false,
